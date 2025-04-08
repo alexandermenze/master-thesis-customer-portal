@@ -1,0 +1,11 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30432  # Postgres
+        hostPort: 30432
+      - containerPort: 30379  # Redis
+        hostPort: 30379
+      - containerPort: 30900  # MinIO
+        hostPort: 30900
