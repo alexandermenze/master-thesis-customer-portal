@@ -7,5 +7,7 @@ nodes:
         hostPort: 30432
       - containerPort: 30379  # Redis
         hostPort: 30379
-      - containerPort: 30900  # MinIO
+      - containerPort: 30900  # MinIO Api
         hostPort: 30900
+      - containerPort: 30901  # MinIO Console
+        hostPort: 30901

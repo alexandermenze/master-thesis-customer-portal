@@ -1,0 +1,12 @@
+fullnameOverride: redis
+architecture: standalone
+auth:
+  enabled: false
+master:
+  persistence:
+    enabled: true
+    size: 512Mi
+  service:
+    type: NodePort
+    nodePorts:
+      redis: 30379

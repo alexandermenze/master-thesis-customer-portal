@@ -1,0 +1,13 @@
+fullnameOverride: minio
+auth:
+  rootUser: admin
+  rootPassword: development
+defaultBuckets: customer-files
+service:
+  type: NodePort
+  nodePorts:
+    api: 30900
+    console: 30901
+persistence:
+  enabled: true
+  size: 1Gi
