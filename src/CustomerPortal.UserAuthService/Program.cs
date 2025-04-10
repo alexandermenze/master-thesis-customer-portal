@@ -1,10 +1,14 @@
+using CustomerPortal.UserAuthService.Postgres;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-// TODO: Setup postgres connection
+builder.Services.AddDbContextPool<UserAuthContext>(o =>
+    o.UseNpgsql(builder.Configuration.GetValue<string>("Postgres:ConnectionString"))
+);
 
 var app = builder.Build();
 
