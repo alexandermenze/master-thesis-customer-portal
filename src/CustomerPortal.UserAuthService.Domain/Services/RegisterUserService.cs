@@ -20,7 +20,8 @@ public class RegisterUserService(
             data.Email,
             passwordService.HashPassword(data.Email, data.Password),
             data.FirstName,
-            data.LastName
+            data.LastName,
+            data.Role
         );
 
         if (await userRepository.GetByEmail(data.Email) is not null)

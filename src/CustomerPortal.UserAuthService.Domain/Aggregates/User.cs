@@ -7,13 +7,14 @@ public class User(Guid id, UserData userData)
 {
     // Required private constructor for EntityFramework
     private User()
-        : this(Guid.Empty, new UserData(null!, null!, null!, null!)) { }
+        : this(Guid.Empty, new UserData(null!, null!, null!, null!, UserRole.Customer)) { }
 
     public Guid Id { get; private set; } = id;
     public string Email { get; private set; } = userData.Email;
     public string PasswordHashWithSalt { get; private set; } = userData.PasswordHashWithSalt;
     public string FirstName { get; private set; } = userData.FirstName;
     public string LastName { get; private set; } = userData.LastName;
+    public UserRole Role { get; private set; } = userData.Role;
     public bool Approved { get; private set; }
 
     private readonly List<SessionToken> _sessionTokens = [];
