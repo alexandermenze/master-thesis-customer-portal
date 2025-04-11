@@ -20,8 +20,4 @@
     <ProjectReference Include="..\CustomerPortal.UserAuthService.Postgres\CustomerPortal.UserAuthService.Postgres.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Dtos\" />
-  </ItemGroup>
-
 </Project>

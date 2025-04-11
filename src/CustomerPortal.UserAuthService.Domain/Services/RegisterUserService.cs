@@ -1,5 +1,6 @@
 using CustomerPortal.UserAuthService.Domain.Aggregates;
 using CustomerPortal.UserAuthService.Domain.DataClasses;
+using CustomerPortal.UserAuthService.Domain.Exceptions;
 using CustomerPortal.UserAuthService.Domain.Repositories;
 
 namespace CustomerPortal.UserAuthService.Domain.Services;
@@ -7,7 +8,7 @@ namespace CustomerPortal.UserAuthService.Domain.Services;
 public class RegisterUserService(IPasswordService passwordService, IUserRepository userRepository)
     : IRegisterUserService
 {
-    public Task<User> Register(RegisterUserData data)
+    public async Task<User> Register(RegisterUserData data)
     {
         passwordService.EnsureRequirementsAreMet(data.Password);
 
@@ -18,6 +19,9 @@ public class RegisterUserService(IPasswordService passwordService, IUserReposito
             data.LastName
         );
 
-        return userRepository.Add(userData);
+        if (await userRepository.GetByEmail(data.Email) is not null)
+            throw new OperationConflictException("User already exists.");
+
+        return await userRepository.Add(userData);
     }
 }

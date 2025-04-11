@@ -7,10 +7,6 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi();
-builder.Services.AddControllers();
-builder.Services.AddTransient<IPasswordHasher<string>, PasswordHasher<string>>();
-
 builder.Services.AddUserAuthServicePostgres(o =>
     builder.Configuration.GetSection("Postgres").Bind(o)
 );
@@ -41,6 +37,11 @@ builder.Services.AddProblemDetails(o =>
         ctx.ProblemDetails.Detail = ctx.Exception?.Message;
     }
 );
+
+builder.Services.AddControllers();
+builder.Services.AddOpenApi();
+
+builder.Services.AddTransient<IPasswordHasher<string>, PasswordHasher<string>>();
 
 var app = builder.Build();
 
