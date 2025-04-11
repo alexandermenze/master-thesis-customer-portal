@@ -5,11 +5,15 @@ using CustomerPortal.UserAuthService.Domain.Repositories;
 
 namespace CustomerPortal.UserAuthService.Domain.Services;
 
-public class RegisterUserService(IPasswordService passwordService, IUserRepository userRepository)
-    : IRegisterUserService
+public class RegisterUserService(
+    IEmailAddressValidationService emailAddressValidationService,
+    IPasswordService passwordService,
+    IUserRepository userRepository
+) : IRegisterUserService
 {
     public async Task<User> Register(RegisterUserData data)
     {
+        emailAddressValidationService.EnsureIsValid(data.Email);
         passwordService.EnsureRequirementsAreMet(data.Password);
 
         var userData = new UserData(

@@ -8,6 +8,7 @@ public static class ServiceCollectionExtensions
 {
     public static void AddUserAuthService(this IServiceCollection services)
     {
+        services.AddTransient<IEmailAddressValidationService, EmailAddressValidationService>();
         services.AddTransient<IPasswordService, PasswordService>();
         services.AddTransient<IRegisterUserService, RegisterUserService>();
         services.AddTransient<IUserFactory, UserFactory>();
