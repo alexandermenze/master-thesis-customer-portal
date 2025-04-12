@@ -7,6 +7,7 @@ public record UserResponseDto(
     string Email,
     string FirstName,
     string LastName,
+    UserRole Role,
     bool Approved
 )
 {
@@ -18,6 +19,7 @@ public record UserResponseDto(
                 user.Email,
                 user.FirstName,
                 user.LastName,
-                user.Approved
+                user.Role,
+                user.IsApproved
             );
 }

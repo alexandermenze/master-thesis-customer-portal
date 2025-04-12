@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+using CustomerPortal.UserAuthService.Domain.Aggregates;
 using CustomerPortal.UserAuthService.Domain.DataClasses;
 using CustomerPortal.UserAuthService.Domain.Repositories;
 using CustomerPortal.UserAuthService.Domain.Services;
@@ -13,6 +15,15 @@ public class UserController(
     IRegisterUserService registerUserService
 ) : ControllerBase
 {
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserResponseDto>))]
+    public async Task<IActionResult> GetUsers()
+    {
+        var users = await userRepository.GetAll();
+        var userResponseDtos = users.Select(UserResponseDto.From);
+        return Ok(userResponseDtos);
+    }
+
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -40,5 +51,8 @@ public class UserController(
     [HttpPost("{id:guid}/approve")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
-    public async Task<IActionResult> Approve(Guid id) { }
+    public async Task<IActionResult> Approve(Guid id)
+    {
+        throw new NotImplementedException();
+    }
 }

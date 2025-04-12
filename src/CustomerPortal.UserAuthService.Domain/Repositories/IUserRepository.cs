@@ -7,7 +7,10 @@ namespace CustomerPortal.UserAuthService.Domain.Repositories;
 public interface IUserRepository
 {
     Task<ImmutableArray<User>> GetAll();
+    Task<ImmutableArray<User>> GetByRole(UserRole role);
     Task<User?> GetById(Guid id);
     Task<User?> GetByEmail(string email);
     Task<User> Add(UserData userData);
+    Task<User> Save(User user);
+    Task Delete(Guid id);
 }

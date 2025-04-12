@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json.Serialization;
 using CustomerPortal.UserAuthService.Domain.Exceptions;
 using CustomerPortal.UserAuthService.Domain.Extensions;
 using CustomerPortal.UserAuthService.Postgres.Extensions;
@@ -10,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddUserAuthServicePostgres(o =>
     builder.Configuration.GetSection("Postgres").Bind(o)
 );
-builder.Services.AddUserAuthService();
+builder.Services.AddUserAuthService(o => builder.Configuration.GetSection("Auth:Admin").Bind(o));
 
 builder.Services.AddProblemDetails(o =>
     o.CustomizeProblemDetails = ctx =>
@@ -38,7 +39,9 @@ builder.Services.AddProblemDetails(o =>
     }
 );
 
-builder.Services.AddControllers();
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
 
 builder.Services.AddTransient<IPasswordHasher<string>, PasswordHasher<string>>();
@@ -46,6 +49,7 @@ builder.Services.AddTransient<IPasswordHasher<string>, PasswordHasher<string>>()
 var app = builder.Build();
 
 await app.Services.InitializeUserAuthServicePostgres();
+await app.Services.InitializeUserAuthService();
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();

@@ -15,17 +15,17 @@ public class User(Guid id, UserData userData)
     public string FirstName { get; private set; } = userData.FirstName;
     public string LastName { get; private set; } = userData.LastName;
     public UserRole Role { get; private set; } = userData.Role;
-    public bool Approved { get; private set; }
+    public bool IsApproved { get; private set; }
 
     private readonly List<SessionToken> _sessionTokens = [];
     public IReadOnlyList<SessionToken> SessionTokens => _sessionTokens.AsReadOnly();
 
     public void Approve()
     {
-        if (Approved)
+        if (IsApproved)
             throw new DomainValidationException("User is already approved.");
 
-        Approved = true;
+        IsApproved = true;
     }
 
     public bool Authenticate(string email, string passwordHashWithSalt)
@@ -43,8 +43,9 @@ public class User(Guid id, UserData userData)
 
     public bool IsSessionValidAt(string token, DateTime when)
     {
-        return _sessionTokens
-            .Where(s => s.Token.Equals(token, StringComparison.Ordinal))
-            .Any(s => s.ExpiresAt < when);
+        return IsApproved
+            && _sessionTokens
+                .Where(s => s.Token.Equals(token, StringComparison.Ordinal))
+                .Any(s => s.ExpiresAt < when);
     }
 }
