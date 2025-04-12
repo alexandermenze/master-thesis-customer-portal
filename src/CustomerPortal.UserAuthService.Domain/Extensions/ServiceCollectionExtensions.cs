@@ -1,8 +1,4 @@
-using System.Text.Json.Schema;
-using CustomerPortal.UserAuthService.Domain.Aggregates;
-using CustomerPortal.UserAuthService.Domain.DataClasses;
 using CustomerPortal.UserAuthService.Domain.Factories;
-using CustomerPortal.UserAuthService.Domain.Repositories;
 using CustomerPortal.UserAuthService.Domain.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
