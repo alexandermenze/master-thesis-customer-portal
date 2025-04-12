@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using CustomerPortal.UserAuthService.Domain.Aggregates;
 using CustomerPortal.UserAuthService.Domain.DataClasses;
 using CustomerPortal.UserAuthService.Domain.Repositories;
 using CustomerPortal.UserAuthService.Domain.Services;
@@ -12,7 +11,8 @@ namespace CustomerPortal.UserAuthService.Controllers;
 [Route("users")]
 public class UserController(
     IUserRepository userRepository,
-    IRegisterUserService registerUserService
+    IRegisterUserService registerUserService,
+    ILoginUserService loginUserService,
 ) : ControllerBase
 {
     [HttpGet]
@@ -46,6 +46,14 @@ public class UserController(
         var user = await registerUserService.Register(data);
         var userResponse = UserResponseDto.From(user);
         return CreatedAtAction(nameof(Get), new { id = user.Id }, userResponse);
+    }
+
+    [HttpPost("login")]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(SessionTokenResponseDto))]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto data)
+    {
+        
     }
 
     [HttpPost("{id:guid}/approve")]
