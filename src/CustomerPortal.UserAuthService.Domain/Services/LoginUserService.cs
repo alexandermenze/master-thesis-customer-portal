@@ -10,7 +10,7 @@ public class LoginUserService(
     TimeProvider timeProvider
 ) : ILoginUserService
 {
-    public async Task<SessionToken?> Login(string email, string password)
+    public async Task<(User, SessionToken)?> Login(string email, string password)
     {
         var user = await userRepository.GetByEmail(email);
 
@@ -31,6 +31,6 @@ public class LoginUserService(
 
         await userRepository.Save(user);
 
-        return sessionToken;
+        return (user, sessionToken);
     }
 }

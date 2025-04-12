@@ -2,11 +2,16 @@ using System.Net;
 using System.Text.Json.Serialization;
 using CustomerPortal.UserAuthService.Domain.Exceptions;
 using CustomerPortal.UserAuthService.Domain.Extensions;
+using CustomerPortal.UserAuthService.Domain.Services;
 using CustomerPortal.UserAuthService.Postgres.Extensions;
+using CustomerPortal.UserAuthService.Services;
 using Microsoft.AspNetCore.Identity;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddTransient<ITokenGenerationService, TokenGenerationService>();
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddUserAuthServicePostgres(o =>
     builder.Configuration.GetSection("Postgres").Bind(o)
