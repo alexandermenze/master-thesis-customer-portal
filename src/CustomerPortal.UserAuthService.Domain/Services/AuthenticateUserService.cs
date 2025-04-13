@@ -3,12 +3,12 @@ using CustomerPortal.UserAuthService.Domain.Repositories;
 
 namespace CustomerPortal.UserAuthService.Domain.Services;
 
-public class LoginUserService(
+public class AuthenticateUserService(
     IUserRepository userRepository,
     IPasswordService passwordService,
     ITokenGenerationService tokenGenerationService,
     TimeProvider timeProvider
-) : ILoginUserService
+) : IAuthenticateUserService
 {
     public async Task<(User, SessionToken)?> Login(string email, string password)
     {
@@ -17,17 +17,17 @@ public class LoginUserService(
         if (user is null)
             return null;
 
-        var passwordWithHashAndSalt = passwordService.HashPassword(user.Email, password);
+        if (user.IsApproved is false)
+            return null;
 
-        if (user.Authenticate(user.Email, passwordWithHashAndSalt) is false)
+        if (
+            passwordService.VerifyPassword(user.Email, user.PasswordHashWithSalt, password) is false
+        )
             return null;
 
         var token = tokenGenerationService.Generate();
 
-        var sessionToken = user.AddSessionToken(
-            token,
-            timeProvider.GetUtcNow().AddHours(1).DateTime
-        );
+        var sessionToken = user.AddSessionToken(token, timeProvider.GetUtcNow().AddHours(1));
 
         await userRepository.Save(user);
 

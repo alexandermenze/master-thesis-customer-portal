@@ -28,24 +28,18 @@ public class User(Guid id, UserData userData)
         IsApproved = true;
     }
 
-    public bool Authenticate(string email, string passwordHashWithSalt)
-    {
-        return Email.Equals(email, StringComparison.OrdinalIgnoreCase)
-            && PasswordHashWithSalt.Equals(passwordHashWithSalt, StringComparison.Ordinal);
-    }
-
-    public SessionToken AddSessionToken(string token, DateTime expiresAt)
+    public SessionToken AddSessionToken(string token, DateTimeOffset expiresAt)
     {
         var sessionToken = new SessionToken(Guid.CreateVersion7(), token, expiresAt);
         _sessionTokens.Add(sessionToken);
         return sessionToken;
     }
 
-    public bool IsSessionValidAt(string token, DateTime when)
+    public bool IsSessionValidAt(string token, DateTimeOffset when)
     {
         return IsApproved
             && _sessionTokens
                 .Where(s => s.Token.Equals(token, StringComparison.Ordinal))
-                .Any(s => s.ExpiresAt < when);
+                .Any(s => when <= s.ExpiresAt);
     }
 }

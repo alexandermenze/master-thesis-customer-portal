@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json.Serialization;
+using CustomerPortal.UserAuthService.Authentication;
 using CustomerPortal.UserAuthService.Domain.Exceptions;
 using CustomerPortal.UserAuthService.Domain.Extensions;
 using CustomerPortal.UserAuthService.Domain.Services;
@@ -12,6 +13,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddTransient<ITokenGenerationService, TokenGenerationService>();
 builder.Services.AddSingleton(TimeProvider.System);
+
+builder
+    .Services.AddAuthentication(TokenAuthSchemeConstants.AuthenticationScheme)
+    .AddScheme<TokenAuthSchemeOptions, TokenAuthenticationHandler>(
+        TokenAuthSchemeConstants.AuthenticationScheme,
+        _ => { }
+    );
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddUserAuthServicePostgres(o =>
     builder.Configuration.GetSection("Postgres").Bind(o)
@@ -56,14 +66,17 @@ var app = builder.Build();
 await app.Services.InitializeUserAuthServicePostgres();
 await app.Services.InitializeUserAuthService();
 
-app.UseExceptionHandler();
-app.UseStatusCodePages();
-
 app.MapOpenApi();
 app.MapScalarApiReference();
 
 app.MapGet("/", [ExcludeFromDescription] () => Results.LocalRedirect("/scalar/v1"));
 
-app.MapControllers();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseExceptionHandler();
+app.UseStatusCodePages();
+
+app.MapControllers().RequireAuthorization();
 
 await app.RunAsync();

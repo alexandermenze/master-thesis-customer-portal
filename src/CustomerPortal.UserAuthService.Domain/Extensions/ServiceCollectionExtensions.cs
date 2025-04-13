@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IPasswordService, PasswordService>();
         services.AddTransient<IRegisterUserService, RegisterUserService>();
         services.AddTransient<IUserFactory, UserFactory>();
-        services.AddTransient<ILoginUserService, LoginUserService>();
+        services.AddTransient<IAuthenticateUserService, AuthenticateUserService>();
         services.AddTransient<IUserApprovalService, UserApprovalService>();
         services.AddTransient<ISuperAdminSetupService, SuperAdminSetupService>();
     }

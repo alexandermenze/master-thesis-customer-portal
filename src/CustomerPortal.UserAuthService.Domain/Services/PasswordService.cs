@@ -13,4 +13,14 @@ public class PasswordService(IPasswordHasher<string> passwordHasher) : IPassword
 
     public string HashPassword(string email, string password) =>
         passwordHasher.HashPassword(email, password);
+
+    public bool VerifyPassword(string email, string hashedPassword, string password) =>
+        passwordHasher.VerifyHashedPassword(email, hashedPassword, password) switch
+        {
+            PasswordVerificationResult.Success => true,
+            // Ignored in demo application
+            PasswordVerificationResult.SuccessRehashNeeded => true,
+            PasswordVerificationResult.Failed => false,
+            _ => false,
+        };
 }

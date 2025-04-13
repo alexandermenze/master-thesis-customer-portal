@@ -43,7 +43,7 @@ public class TokenAuthenticationHandler(
         if (user is null)
             return AuthenticateResult.Fail("Invalid token");
 
-        if (user.IsSessionValidAt(token, DateTime.UtcNow) is false)
+        if (user.IsSessionValidAt(token, DateTimeOffset.UtcNow) is false)
             return AuthenticateResult.Fail("Invalid token");
 
         return AuthenticateResult.Success(

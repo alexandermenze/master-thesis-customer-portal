@@ -14,7 +14,7 @@ namespace CustomerPortal.UserAuthService.Controllers;
 public class UserController(
     IUserRepository userRepository,
     IRegisterUserService registerUserService,
-    ILoginUserService loginUserService,
+    IAuthenticateUserService authenticateUserService,
     IUserApprovalService userApprovalService
 ) : ControllerBase
 {
@@ -58,7 +58,7 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto data)
     {
-        var result = await loginUserService.Login(data.Email, data.Password);
+        var result = await authenticateUserService.Login(data.Email, data.Password);
 
         if (result.HasValue is false)
             throw new EntityNotFoundException("User not found.");
