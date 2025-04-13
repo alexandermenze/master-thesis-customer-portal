@@ -54,7 +54,10 @@ public class TokenAuthenticationHandler(
     private static ClaimsPrincipal CreateFromUser(User user)
     {
         var claimsIdentity = new ClaimsIdentity(
-            [new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())]
+            [
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role.ToString()),
+            ]
         );
 
         return new ClaimsPrincipal(claimsIdentity);

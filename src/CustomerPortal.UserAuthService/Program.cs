@@ -1,11 +1,14 @@
 using System.Net;
+using System.Security.Claims;
 using System.Text.Json.Serialization;
 using CustomerPortal.UserAuthService.Authentication;
+using CustomerPortal.UserAuthService.Domain.Aggregates;
 using CustomerPortal.UserAuthService.Domain.Exceptions;
 using CustomerPortal.UserAuthService.Domain.Extensions;
 using CustomerPortal.UserAuthService.Domain.Services;
 using CustomerPortal.UserAuthService.Postgres.Extensions;
 using CustomerPortal.UserAuthService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Scalar.AspNetCore;
 
@@ -21,7 +24,16 @@ builder
         _ => { }
     );
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(o =>
+{
+    var adminPolicy = new AuthorizationPolicyBuilder()
+        .RequireClaim(ClaimTypes.Role, UserRole.SuperAdmin.ToString(), UserRole.Admin.ToString())
+        .Build();
+
+    o.AddPolicy("IsAdmin", adminPolicy);
+
+    o.FallbackPolicy = adminPolicy;
+});
 
 builder.Services.AddUserAuthServicePostgres(o =>
     builder.Configuration.GetSection("Postgres").Bind(o)
@@ -66,10 +78,11 @@ var app = builder.Build();
 await app.Services.InitializeUserAuthServicePostgres();
 await app.Services.InitializeUserAuthService();
 
-app.MapOpenApi();
-app.MapScalarApiReference();
+app.MapOpenApi().AllowAnonymous();
+app.MapScalarApiReference().AllowAnonymous();
 
-app.MapGet("/", [ExcludeFromDescription] () => Results.LocalRedirect("/scalar/v1"));
+app.MapGet("/", [ExcludeFromDescription] () => Results.LocalRedirect("/scalar/v1"))
+    .AllowAnonymous();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -77,6 +90,6 @@ app.UseAuthorization();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
-app.MapControllers().RequireAuthorization();
+app.MapControllers();
 
 await app.RunAsync();
