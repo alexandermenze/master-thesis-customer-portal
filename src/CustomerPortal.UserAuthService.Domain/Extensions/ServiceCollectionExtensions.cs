@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IRegisterUserService, RegisterUserService>();
         services.AddTransient<IUserFactory, UserFactory>();
         services.AddTransient<IAuthenticateUserService, AuthenticateUserService>();
-        services.AddTransient<IUserApprovalService, UserApprovalService>();
+        services.AddTransient<IUserManagementService, UserManagementService>();
         services.AddTransient<ISuperAdminSetupService, SuperAdminSetupService>();
     }
 

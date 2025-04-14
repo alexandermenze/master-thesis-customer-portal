@@ -15,7 +15,7 @@ public class UserController(
     IUserRepository userRepository,
     IRegisterUserService registerUserService,
     IAuthenticateUserService authenticateUserService,
-    IUserApprovalService userApprovalService
+    IUserManagementService userManagementService
 ) : ControllerBase
 {
     [HttpGet]
@@ -81,6 +81,23 @@ public class UserController(
         if (Guid.TryParse(currentUserGuidString, out var currentUserGuid) is false)
             throw new EntityNotFoundException("Current user not found.");
 
-        return Ok(UserResponseDto.From(await userApprovalService.Approve(currentUserGuid, id)));
+        return Ok(UserResponseDto.From(await userManagementService.Approve(currentUserGuid, id)));
+    }
+
+    [HttpPatch("{id:guid}/deactivate")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Deactivate(Guid id)
+    {
+        var currentUserGuidString = HttpContext
+            .User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+            ?.Value;
+
+        if (Guid.TryParse(currentUserGuidString, out var currentUserGuid) is false)
+            throw new EntityNotFoundException("Current user not found.");
+
+        return Ok(
+            UserResponseDto.From(await userManagementService.Deactivate(currentUserGuid, id))
+        );
     }
 }

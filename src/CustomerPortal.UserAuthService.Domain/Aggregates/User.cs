@@ -15,17 +15,26 @@ public class User(Guid id, UserData userData)
     public string FirstName { get; private set; } = userData.FirstName;
     public string LastName { get; private set; } = userData.LastName;
     public UserRole Role { get; private set; } = userData.Role;
-    public bool IsApproved { get; private set; }
+    public UserState State { get; private set; } = UserState.Pending;
 
     private readonly List<SessionToken> _sessionTokens = [];
     public IReadOnlyList<SessionToken> SessionTokens => _sessionTokens.AsReadOnly();
 
     public void Approve()
     {
-        if (IsApproved)
-            throw new DomainValidationException("User is already approved.");
+        if (State is not UserState.Pending)
+            throw new DomainValidationException("User is not pending.");
 
-        IsApproved = true;
+        State = UserState.Approved;
+    }
+
+    public void Deactivate()
+    {
+        if (State is not UserState.Pending)
+            throw new DomainValidationException("User is not pending.");
+
+        _sessionTokens.Clear();
+        State = UserState.Deactivated;
     }
 
     public SessionToken AddSessionToken(string token, DateTimeOffset expiresAt)
@@ -37,7 +46,7 @@ public class User(Guid id, UserData userData)
 
     public bool IsSessionValidAt(string token, DateTimeOffset when)
     {
-        return IsApproved
+        return State is UserState.Approved
             && _sessionTokens
                 .Where(s => s.Token.Equals(token, StringComparison.Ordinal))
                 .Any(s => when <= s.ExpiresAt);

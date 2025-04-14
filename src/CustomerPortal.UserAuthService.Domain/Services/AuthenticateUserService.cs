@@ -14,10 +14,7 @@ public class AuthenticateUserService(
     {
         var user = await userRepository.GetByEmail(email);
 
-        if (user is null)
-            return null;
-
-        if (user.IsApproved is false)
+        if (user?.State is not UserState.Approved)
             return null;
 
         if (

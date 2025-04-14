@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using CustomerPortal.UserAuthService.Domain.Aggregates;
 using CustomerPortal.UserAuthService.Domain.DataClasses;
 using CustomerPortal.UserAuthService.Domain.Exceptions;
@@ -11,8 +12,18 @@ public class RegisterUserService(
     IUserRepository userRepository
 ) : IRegisterUserService
 {
+    private static readonly ImmutableArray<UserRole> AllowedUserRoles =
+    [
+        UserRole.Admin,
+        UserRole.SalesDepartment,
+        UserRole.Customer,
+    ];
+
     public async Task<User> Register(RegisterUserData data)
     {
+        if (AllowedUserRoles.Contains(data.Role) is false)
+            throw new DomainValidationException("Invalid user role.");
+
         emailAddressValidationService.EnsureIsValid(data.Email);
         passwordService.EnsureRequirementsAreMet(data.Password);
 

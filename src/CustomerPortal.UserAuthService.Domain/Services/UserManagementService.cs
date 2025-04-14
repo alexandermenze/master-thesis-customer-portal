@@ -4,7 +4,7 @@ using CustomerPortal.UserAuthService.Domain.Repositories;
 
 namespace CustomerPortal.UserAuthService.Domain.Services;
 
-public class UserApprovalService(IUserRepository userRepository) : IUserApprovalService
+public class UserManagementService(IUserRepository userRepository) : IUserManagementService
 {
     public async Task<User> Approve(Guid approverGuid, Guid candidateGuid)
     {
@@ -14,7 +14,7 @@ public class UserApprovalService(IUserRepository userRepository) : IUserApproval
         if (approver is null || candidate is null)
             throw new EntityNotFoundException("Current user or candidate not found.");
 
-        if (AllowsApproval(approver.Role, candidate.Role) is false)
+        if (AllowsStateChange(approver.Role, candidate.Role) is false)
             throw new DomainValidationException("Insufficient rights to approve.");
 
         candidate.Approve();
@@ -23,8 +23,25 @@ public class UserApprovalService(IUserRepository userRepository) : IUserApproval
         return candidate;
     }
 
-    private static bool AllowsApproval(UserRole approverRole, UserRole candidateRole) =>
-        (approverRole, candidateRole) switch
+    public async Task<User> Deactivate(Guid deactivatingPartyGuid, Guid candidateGuid)
+    {
+        var deactivatingParty = await userRepository.GetById(deactivatingPartyGuid);
+        var candidate = await userRepository.GetById(candidateGuid);
+
+        if (deactivatingParty is null || candidate is null)
+            throw new EntityNotFoundException("Current user or candidate not found.");
+
+        if (AllowsStateChange(deactivatingParty.Role, candidate.Role) is false)
+            throw new DomainValidationException("Insufficient rights to approve.");
+
+        candidate.Deactivate();
+        await userRepository.Save(candidate);
+
+        return candidate;
+    }
+
+    private static bool AllowsStateChange(UserRole stateChangerRole, UserRole candidateRole) =>
+        (stateChangerRole, candidateRole) switch
         {
             (UserRole.SuperAdmin, _) => true,
             (UserRole.Admin, UserRole.SalesDepartment) => true,

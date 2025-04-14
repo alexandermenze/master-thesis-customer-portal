@@ -8,7 +8,7 @@ public record UserResponseDto(
     string FirstName,
     string LastName,
     UserRole Role,
-    bool Approved
+    UserState State
 )
 {
     public static UserResponseDto? From(User? user) =>
@@ -20,6 +20,6 @@ public record UserResponseDto(
                 user.FirstName,
                 user.LastName,
                 user.Role,
-                user.IsApproved
+                user.State
             );
 }

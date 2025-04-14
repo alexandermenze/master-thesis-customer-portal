@@ -12,5 +12,6 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Id).ValueGeneratedNever();
         builder.Property(u => u.Email).UseCollation(AddCollation.CaseInsensitiveCollationName);
         builder.HasIndex(u => u.Email).IsUnique();
+        builder.Property(u => u.State).HasConversion<string>();
     }
 }
