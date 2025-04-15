@@ -1,13 +1,12 @@
 using System.Text.Json;
 using CustomerPortal.Messages.Commands;
-using QuestPDF.Fluent;
-using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
+using Minio;
+using Minio.DataModel.Args;
 using StackExchange.Redis;
 
 namespace CustomerPortal.CatalogGenerationService;
 
-public class App(StreamDatabase streamDatabase)
+public class App(StreamDatabase streamDatabase, MinioClient minioClient, string minioBucket)
 {
     public async Task Run(CancellationToken ct)
     {
@@ -49,6 +48,12 @@ public class App(StreamDatabase streamDatabase)
             var message = result[0];
             var body = message["Body"];
             await ProcessMessage(body.ToString(), ct);
+
+            await streamDatabase.Database.StreamAcknowledgeAsync(
+                streamDatabase.StreamName,
+                streamDatabase.GroupName,
+                message.Id
+            );
         }
     }
 
@@ -76,23 +81,25 @@ public class App(StreamDatabase streamDatabase)
         var createCustomerPricelistCommand =
             JsonSerializer.Deserialize<CreateCustomerPricelistCommand>(body);
 
-        Document
-            .Create(document =>
-                document.Page(page =>
-                {
-                    page.Size(PageSizes.A4);
-                    page.Margin(2, Unit.Centimetre);
+        if (createCustomerPricelistCommand is null)
+            return;
 
-                    page.Header().Text("Products Pricelist").FontSize(18).Bold();
+        var pdfMemoryStream = PricelistPdfGenerator.GeneratePdf(
+            createCustomerPricelistCommand.CustomerNo,
+            createCustomerPricelistCommand.SalesOrg,
+            createCustomerPricelistCommand.PriceDate
+        );
 
-                    page.Content().PaddingVertical(0.5f, Unit.Centimetre).Column(column =>
-                    {
-                        column.Item().Text(Placeholders.)
-                    });
+        var dateTime = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss-fff");
+        var fileName = $"{dateTime}_{createCustomerPricelistCommand.SalesOrg}.pdf";
 
-                    page.Footer().Text("Company Inc.").FontSize(12).Bold();
-                })
-            )
-            .GeneratePdfAndShow();
+        await minioClient.PutObjectAsync(
+            new PutObjectArgs()
+                .WithStreamData(pdfMemoryStream)
+                .WithObject($"{createCustomerPricelistCommand.CustomerNo}/{fileName}")
+                .WithObjectSize(pdfMemoryStream.Length)
+                .WithBucket(minioBucket),
+            ct
+        );
     }
 }
