@@ -30,7 +30,30 @@ builder.Services.AddAuthorization(o =>
         .RequireClaim(ClaimTypes.Role, UserRole.SuperAdmin.ToString(), UserRole.Admin.ToString())
         .Build();
 
-    o.AddPolicy("IsAdmin", adminPolicy);
+    o.AddPolicy(Policies.AtLeastAdmin, adminPolicy);
+
+    var salesDepartmentPolicy = new AuthorizationPolicyBuilder()
+        .RequireClaim(
+            ClaimTypes.Role,
+            UserRole.SuperAdmin.ToString(),
+            UserRole.Admin.ToString(),
+            UserRole.SalesDepartment.ToString()
+        )
+        .Build();
+
+    o.AddPolicy(Policies.AtLeastSalesDepartment, salesDepartmentPolicy);
+
+    var customerPolicy = new AuthorizationPolicyBuilder()
+        .RequireClaim(
+            ClaimTypes.Role,
+            UserRole.SuperAdmin.ToString(),
+            UserRole.Admin.ToString(),
+            UserRole.SalesDepartment.ToString(),
+            UserRole.Customer.ToString()
+        )
+        .Build();
+
+    o.AddPolicy(Policies.AtLeastCustomer, customerPolicy);
 
     o.FallbackPolicy = adminPolicy;
 });

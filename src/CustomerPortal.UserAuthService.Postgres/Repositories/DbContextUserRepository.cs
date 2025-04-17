@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Runtime.InteropServices;
 using CustomerPortal.UserAuthService.Domain.Aggregates;
 using CustomerPortal.UserAuthService.Domain.DataClasses;
 using CustomerPortal.UserAuthService.Domain.Factories;
@@ -11,6 +12,9 @@ public class DbContextUserRepository(UserAuthContext userAuthContext, IUserFacto
     : IUserRepository
 {
     public async Task<ImmutableArray<User>> GetAll() => [.. await QueryUsers.ToListAsync()];
+
+    public async Task<ImmutableArray<User>> GetAllPendingApproval() =>
+        [.. await QueryUsers.Where(u => u.State == UserState.Pending).ToListAsync()];
 
     public async Task<ImmutableArray<User>> GetByRole(UserRole role) =>
         [.. await QueryUsers.Where(u => u.Role == role).ToListAsync()];

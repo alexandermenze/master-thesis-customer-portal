@@ -7,6 +7,7 @@ namespace CustomerPortal.UserAuthService.Domain.Repositories;
 public interface IUserRepository
 {
     Task<ImmutableArray<User>> GetAll();
+    Task<ImmutableArray<User>> GetAllPendingApproval();
     Task<ImmutableArray<User>> GetByRole(UserRole role);
     Task<User?> GetById(Guid id);
     Task<User?> GetByEmail(string email);

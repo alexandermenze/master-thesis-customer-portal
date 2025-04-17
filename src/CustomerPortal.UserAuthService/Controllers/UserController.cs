@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CustomerPortal.UserAuthService.Authentication;
 using CustomerPortal.UserAuthService.Domain.DataClasses;
 using CustomerPortal.UserAuthService.Domain.Exceptions;
 using CustomerPortal.UserAuthService.Domain.Repositories;
@@ -19,6 +20,7 @@ public class UserController(
 ) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Policies.AtLeastSalesDepartment)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserResponseDto>))]
     public async Task<IActionResult> GetUsers()
     {
@@ -27,7 +29,18 @@ public class UserController(
         return Ok(userResponseDtos);
     }
 
+    [HttpGet]
+    [Authorize(Policies.AtLeastSalesDepartment)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserResponseDto>))]
+    public async Task<IActionResult> GetUnapprovedUsers()
+    {
+        var users = await userRepository.GetAllPendingApproval();
+        var userResponseDtos = users.Select(UserResponseDto.From);
+        return Ok(userResponseDtos);
+    }
+
     [HttpGet("me")]
+    [Authorize(Policies.AtLeastCustomer)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserResponseDto>))]
     public async Task<IActionResult> GetMe()
     {
@@ -44,6 +57,7 @@ public class UserController(
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Policies.AtLeastSalesDepartment)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(Guid id)
@@ -85,6 +99,7 @@ public class UserController(
     }
 
     [HttpPost("{id:guid}/approve")]
+    [Authorize(Policies.AtLeastSalesDepartment)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
@@ -101,6 +116,7 @@ public class UserController(
     }
 
     [HttpPatch("{id:guid}/deactivate")]
+    [Authorize(Policies.AtLeastAdmin)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Deactivate(Guid id)
