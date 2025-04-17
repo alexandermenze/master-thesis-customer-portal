@@ -1,5 +1,6 @@
 using System.Text.Json;
 using CustomerPortal.Messages.Commands;
+using CustomerPortal.Messages.Events;
 using Minio;
 using Minio.DataModel.Args;
 using StackExchange.Redis;
@@ -12,28 +13,11 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
     {
         await SetupConsumer();
 
-        await streamDatabase.Database.StreamAddAsync(
-            streamDatabase.StreamName,
-            [
-                new NameValueEntry("CreatedAt", DateTimeOffset.UtcNow.ToString("O")),
-                new NameValueEntry(
-                    "Body",
-                    JsonSerializer.Serialize(
-                        new CreateCustomerPriceListCommand(
-                            123,
-                            "0080",
-                            DateOnly.FromDateTime(DateTime.Today)
-                        )
-                    )
-                ),
-            ]
-        );
-
         while (ct.IsCancellationRequested is false)
         {
             var result = await streamDatabase.Database.StreamReadGroupAsync(
-                streamDatabase.StreamName,
-                streamDatabase.GroupName,
+                streamDatabase.TaskStreamName,
+                streamDatabase.ConsumerGroupName,
                 consumerName: "catalog-generation-service-1",
                 position: ">",
                 count: 1
@@ -50,8 +34,8 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
             await ProcessMessage(body.ToString(), ct);
 
             await streamDatabase.Database.StreamAcknowledgeAsync(
-                streamDatabase.StreamName,
-                streamDatabase.GroupName,
+                streamDatabase.TaskStreamName,
+                streamDatabase.ConsumerGroupName,
                 message.Id
             );
         }
@@ -59,20 +43,22 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
 
     private async Task SetupConsumer()
     {
-        var streamExists = await streamDatabase.Database.KeyExistsAsync(streamDatabase.StreamName);
+        var streamExists = await streamDatabase.Database.KeyExistsAsync(
+            streamDatabase.TaskStreamName
+        );
 
         var consumerExists =
             streamExists
-            && (await streamDatabase.Database.StreamGroupInfoAsync(streamDatabase.StreamName)).Any(
-                g => g.Name.Equals(streamDatabase.GroupName)
-            );
+            && (
+                await streamDatabase.Database.StreamGroupInfoAsync(streamDatabase.TaskStreamName)
+            ).Any(g => g.Name.Equals(streamDatabase.ConsumerGroupName));
 
         if (consumerExists)
             return;
 
         await streamDatabase.Database.StreamCreateConsumerGroupAsync(
-            streamDatabase.StreamName,
-            streamDatabase.GroupName,
+            streamDatabase.TaskStreamName,
+            streamDatabase.ConsumerGroupName,
             "0-0"
         );
     }
@@ -94,14 +80,35 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
         var dateTime = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss");
         var fileName =
             $"PriceList_{Guid.CreateVersion7():N}_{dateTime}_{createCustomerPricelistCommand.SalesOrg}.pdf";
+        var filePath = $"{createCustomerPricelistCommand.CustomerNo}/{fileName}.pdf";
 
         await minioClient.PutObjectAsync(
             new PutObjectArgs()
                 .WithStreamData(pdfMemoryStream)
-                .WithObject($"{createCustomerPricelistCommand.CustomerNo}/{fileName}")
+                .WithObject(filePath)
                 .WithObjectSize(pdfMemoryStream.Length)
                 .WithBucket(minioBucket),
             ct
+        );
+
+        await streamDatabase.Database.StreamAddAsync(
+            streamDatabase.ResponseStreamName,
+            [
+                new NameValueEntry("CreatedAt", DateTimeOffset.UtcNow.ToString("O")),
+                new NameValueEntry(
+                    "Body",
+                    JsonSerializer.Serialize(
+                        new CustomerPriceListGenerationFinishedEvent(
+                            Guid.CreateVersion7(),
+                            createCustomerPricelistCommand.Id,
+                            createCustomerPricelistCommand.CustomerNo,
+                            createCustomerPricelistCommand.SalesOrg,
+                            createCustomerPricelistCommand.PriceDate,
+                            filePath
+                        )
+                    )
+                ),
+            ]
         );
     }
 }

@@ -30,8 +30,9 @@ var minio = new MinioClient()
 await new App(
     new StreamDatabase(
         redis.GetDatabase(),
-        redisConfig.GetValueOrThrow<string>("StreamName"),
-        redisConfig.GetValueOrThrow<string>("ConsumerGroupName")
+        redisConfig.GetValueOrThrow<string>("TaskStreamName"),
+        redisConfig.GetValueOrThrow<string>("ConsumerGroupName"),
+        redisConfig.GetValueOrThrow<string>("ResponseStreamName")
     ),
     minio,
     minioBucket
