@@ -27,6 +27,22 @@ public class UserController(
         return Ok(userResponseDtos);
     }
 
+    [HttpGet("me")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserResponseDto>))]
+    public async Task<IActionResult> GetMe()
+    {
+        var currentUserGuidString = HttpContext
+            .User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+            ?.Value;
+
+        if (Guid.TryParse(currentUserGuidString, out var currentUserGuid) is false)
+            throw new EntityNotFoundException("Current user not found.");
+
+        var me = await userRepository.GetById(currentUserGuid);
+
+        return Ok(UserResponseDto.From(me));
+    }
+
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponseDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
