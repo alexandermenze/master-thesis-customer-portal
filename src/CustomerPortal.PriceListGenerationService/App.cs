@@ -80,7 +80,7 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
         var dateTime = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss");
         var fileName =
             $"PriceList_{Guid.CreateVersion7():N}_{dateTime}_{createCustomerPricelistCommand.SalesOrg}.pdf";
-        var filePath = $"{createCustomerPricelistCommand.CustomerNo}/{fileName}.pdf";
+        var filePath = $"{createCustomerPricelistCommand.CustomerNo}/{fileName}";
 
         await minioClient.PutObjectAsync(
             new PutObjectArgs()
