@@ -9,7 +9,7 @@ tzInternet = Boundary("Internet")
 tzDMZ = Boundary("DMZ")
 tzPrivateNetwork = Boundary("Internal Network")
 
-#dataGeneratedFiles = Data("Generated Catalogs and Pricelists", )
+#dataGeneratedFiles = Data("Generated Catalogs and PriceLists", )
 #dataCustomerDatabase = Data("Database for Authentication and Master Data")
 #dataTaskMessageQueue = Data("Task Message Queue")
 
@@ -88,11 +88,8 @@ def fileGenerationProcesses(customerFileStorage: Datastore, taskStatusProcess: P
     storeTaskMessageQueue = Datastore("Task Message Queue")
     storeTaskMessageQueue.inBoundary = tzPrivateNetwork
 
-    procCatalogGenerationService = Process("Catalog Generation Service")
-    procCatalogGenerationService.inBoundary = tzPrivateNetwork
-
-    procPricelistGenerationService = Process("Pricelist Generation Service")
-    procPricelistGenerationService.inBoundary = tzPrivateNetwork
+    procPriceListGenerationService = Process("PriceList Generation Service")
+    procPriceListGenerationService.inBoundary = tzPrivateNetwork
 
     dfCustomerCheckTaskStatus = Dataflow(storeTaskMessageQueue, taskStatusProcess, "Inform about customer's task status")
     dfCustomerCheckTaskStatus.protocol = "TCP"
@@ -100,29 +97,17 @@ def fileGenerationProcesses(customerFileStorage: Datastore, taskStatusProcess: P
 
     dfRequestFileGeneration = Dataflow(taskStatusProcess, storeTaskMessageQueue, "Request customer file generation")
 
-    dfStartCatalogGenerationTask = Dataflow(storeTaskMessageQueue, procCatalogGenerationService, "Request new catalog generation")
-    dfStartCatalogGenerationTask.protocol = "TCP"
-    dfStartCatalogGenerationTask.dstPort = 1234
+    dfStartPriceListGenerationTask = Dataflow(storeTaskMessageQueue, procPriceListGenerationService, "Request new pricelist generation")
+    dfStartPriceListGenerationTask.protocol = "TCP"
+    dfStartPriceListGenerationTask.dstPort = 1234
 
-    dfEndCatalogGenerationTask = Dataflow(procCatalogGenerationService, storeTaskMessageQueue, "Inform about finished task")
-    dfEndCatalogGenerationTask.protocol = "TCP"
-    dfEndCatalogGenerationTask.dstPort = 1234
+    dfEndPriceListGenerationTask = Dataflow(procPriceListGenerationService, storeTaskMessageQueue, "Inform about finished task")
+    dfEndPriceListGenerationTask.protocol = "TCP"
+    dfEndPriceListGenerationTask.dstPort = 1234
 
-    dfCatalogGenerationFileSave = Dataflow(procCatalogGenerationService, customerFileStorage, "Store generated catalog file")
-    dfCatalogGenerationFileSave.protocol = "S3"
-    dfCatalogGenerationFileSave.dstPort = 443
-
-    dfStartPricelistGenerationTask = Dataflow(storeTaskMessageQueue, procPricelistGenerationService, "Request new pricelist generation")
-    dfStartPricelistGenerationTask.protocol = "TCP"
-    dfStartPricelistGenerationTask.dstPort = 1234
-
-    dfEndPricelistGenerationTask = Dataflow(procPricelistGenerationService, storeTaskMessageQueue, "Inform about finished task")
-    dfEndPricelistGenerationTask.protocol = "TCP"
-    dfEndPricelistGenerationTask.dstPort = 1234
-
-    dfPricelistFileSave = Dataflow(procPricelistGenerationService, storeCustomerFiles, "Store generated pricelist file")
-    dfPricelistFileSave.protocol = "S3"
-    dfPricelistFileSave.dstPort = 443
+    dfPriceListFileSave = Dataflow(procPriceListGenerationService, storeCustomerFiles, "Store generated pricelist file")
+    dfPriceListFileSave.protocol = "S3"
+    dfPriceListFileSave.dstPort = 443
 
     return 
 
