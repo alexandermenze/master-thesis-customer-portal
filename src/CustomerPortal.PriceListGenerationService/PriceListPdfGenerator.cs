@@ -2,10 +2,15 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 
-namespace CustomerPortal.CatalogGenerationService;
+namespace CustomerPortal.PriceListGenerationService;
 
-public static class PricelistPdfGenerator
+public static class PriceListPdfGenerator
 {
+    static PriceListPdfGenerator()
+    {
+        QuestPDF.Settings.License = LicenseType.Community;
+    }
+
     public static MemoryStream GeneratePdf(int customerNo, string salesOrg, DateOnly priceDate)
     {
         var memoryStream = new MemoryStream();
@@ -20,7 +25,7 @@ public static class PricelistPdfGenerator
                     page.Header()
                         .Column(column =>
                         {
-                            column.Item().Text("Products Pricelist").FontSize(18).Bold();
+                            column.Item().Text("Products Price List").FontSize(18).Bold();
                             column.Item().Text($"Price date: {priceDate.ToString("O")}");
                         });
 
@@ -98,6 +103,7 @@ public static class PricelistPdfGenerator
             )
             .GeneratePdf(memoryStream);
 
+        memoryStream.Position = 0;
         return memoryStream;
     }
 }

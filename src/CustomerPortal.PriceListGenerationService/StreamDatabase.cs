@@ -1,5 +1,5 @@
 using StackExchange.Redis;
 
-namespace CustomerPortal.CatalogGenerationService;
+namespace CustomerPortal.PriceListGenerationService;
 
 public record StreamDatabase(IDatabase Database, string StreamName, string GroupName);

@@ -4,9 +4,9 @@ using Minio;
 using Minio.DataModel.Args;
 using StackExchange.Redis;
 
-namespace CustomerPortal.CatalogGenerationService;
+namespace CustomerPortal.PriceListGenerationService;
 
-public class App(StreamDatabase streamDatabase, MinioClient minioClient, string minioBucket)
+public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string minioBucket)
 {
     public async Task Run(CancellationToken ct)
     {
@@ -19,7 +19,7 @@ public class App(StreamDatabase streamDatabase, MinioClient minioClient, string 
                 new NameValueEntry(
                     "Body",
                     JsonSerializer.Serialize(
-                        new CreateCustomerPricelistCommand(
+                        new CreateCustomerPriceListCommand(
                             123,
                             "0080",
                             DateOnly.FromDateTime(DateTime.Today)
@@ -59,14 +59,15 @@ public class App(StreamDatabase streamDatabase, MinioClient minioClient, string 
 
     private async Task SetupConsumer()
     {
-        if (await streamDatabase.Database.KeyExistsAsync(streamDatabase.StreamName))
-            return;
+        var streamExists = await streamDatabase.Database.KeyExistsAsync(streamDatabase.StreamName);
 
-        var groupNames = await streamDatabase.Database.StreamGroupInfoAsync(
-            streamDatabase.StreamName
-        );
+        var consumerExists =
+            streamExists
+            && (await streamDatabase.Database.StreamGroupInfoAsync(streamDatabase.StreamName)).Any(
+                g => g.Name.Equals(streamDatabase.GroupName)
+            );
 
-        if (groupNames.Any(g => g.Name.Equals(streamDatabase.GroupName)))
+        if (consumerExists)
             return;
 
         await streamDatabase.Database.StreamCreateConsumerGroupAsync(
@@ -79,19 +80,20 @@ public class App(StreamDatabase streamDatabase, MinioClient minioClient, string 
     private async Task ProcessMessage(string body, CancellationToken ct)
     {
         var createCustomerPricelistCommand =
-            JsonSerializer.Deserialize<CreateCustomerPricelistCommand>(body);
+            JsonSerializer.Deserialize<CreateCustomerPriceListCommand>(body);
 
         if (createCustomerPricelistCommand is null)
             return;
 
-        var pdfMemoryStream = PricelistPdfGenerator.GeneratePdf(
+        var pdfMemoryStream = PriceListPdfGenerator.GeneratePdf(
             createCustomerPricelistCommand.CustomerNo,
             createCustomerPricelistCommand.SalesOrg,
             createCustomerPricelistCommand.PriceDate
         );
 
-        var dateTime = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss-fff");
-        var fileName = $"{dateTime}_{createCustomerPricelistCommand.SalesOrg}.pdf";
+        var dateTime = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss");
+        var fileName =
+            $"PriceList_{Guid.CreateVersion7():N}_{dateTime}_{createCustomerPricelistCommand.SalesOrg}.pdf";
 
         await minioClient.PutObjectAsync(
             new PutObjectArgs()
