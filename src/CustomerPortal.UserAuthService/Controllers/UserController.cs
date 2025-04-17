@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CustomerPortal.UserAuthService.Authentication;
+using CustomerPortal.UserAuthService.Domain.Aggregates;
 using CustomerPortal.UserAuthService.Domain.DataClasses;
 using CustomerPortal.UserAuthService.Domain.Exceptions;
 using CustomerPortal.UserAuthService.Domain.Repositories;
@@ -78,6 +79,26 @@ public class UserController(
     public async Task<IActionResult> Register([FromBody] RegisterUserData data)
     {
         var user = await registerUserService.Register(data);
+        var userResponse = UserResponseDto.From(user);
+        return CreatedAtAction(nameof(Get), new { id = user.Id }, userResponse);
+    }
+
+    [HttpPost("register-customer")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResponseDto))]
+    [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
+    public async Task<IActionResult> RegisterCustomer([FromBody] RegisterCustomerUserDto dto)
+    {
+        var user = await registerUserService.Register(
+            new RegisterUserData(
+                dto.Email,
+                dto.Password,
+                dto.FirstName,
+                dto.LastName,
+                UserRole.Customer
+            )
+        );
         var userResponse = UserResponseDto.From(user);
         return CreatedAtAction(nameof(Get), new { id = user.Id }, userResponse);
     }
