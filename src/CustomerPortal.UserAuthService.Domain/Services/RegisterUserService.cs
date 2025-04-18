@@ -21,9 +21,6 @@ public class RegisterUserService(
 
     public async Task<User> Register(RegisterUserData data)
     {
-        if (AllowedUserRoles.Contains(data.Role) is false)
-            throw new DomainValidationException("Invalid user role.");
-
         emailAddressValidationService.EnsureIsValid(data.Email);
         passwordService.EnsureRequirementsAreMet(data.Password);
 
@@ -39,5 +36,13 @@ public class RegisterUserService(
             throw new OperationConflictException("User already exists.");
 
         return await userRepository.Add(userData);
+    }
+
+    public Task<User> RegisterExternal(RegisterUserData data)
+    {
+        if (AllowedUserRoles.Contains(data.Role) is false)
+            throw new DomainValidationException("Invalid user role.");
+
+        return Register(data);
     }
 }

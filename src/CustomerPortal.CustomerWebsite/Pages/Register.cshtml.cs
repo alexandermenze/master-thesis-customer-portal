@@ -13,7 +13,7 @@ public class RegisterModel(IHttpClientFactory httpClientFactory) : PageModel
         public string LastName { get; set; } = string.Empty;
     }
 
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("AuthApi");
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UserAuthService");
 
     [BindProperty]
     public InputModel Input { get; set; } = new();

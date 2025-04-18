@@ -6,4 +6,5 @@ namespace CustomerPortal.UserAuthService.Domain.Services;
 public interface IRegisterUserService
 {
     Task<User> Register(RegisterUserData data);
+    Task<User> RegisterExternal(RegisterUserData data);
 }

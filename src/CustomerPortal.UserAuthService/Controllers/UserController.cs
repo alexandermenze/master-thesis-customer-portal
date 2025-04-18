@@ -78,7 +78,7 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> Register([FromBody] RegisterUserData data)
     {
-        var user = await registerUserService.Register(data);
+        var user = await registerUserService.RegisterExternal(data);
         var userResponse = UserResponseDto.From(user);
         return CreatedAtAction(nameof(Get), new { id = user.Id }, userResponse);
     }
@@ -90,7 +90,7 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ProblemDetails))]
     public async Task<IActionResult> RegisterCustomer([FromBody] RegisterCustomerUserDto dto)
     {
-        var user = await registerUserService.Register(
+        var user = await registerUserService.RegisterExternal(
             new RegisterUserData(
                 dto.Email,
                 dto.Password,
