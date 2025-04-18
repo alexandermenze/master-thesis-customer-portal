@@ -26,9 +26,18 @@ public class RegisterModel(IHttpClientFactory httpClientFactory) : PageModel
         var response = await _httpClient.PostAsJsonAsync("users/register-customer", Input);
 
         if (response.IsSuccessStatusCode)
-            return RedirectToPage("/Login");
+        {
+            TempData["SuccessMessage"] =
+                "Ihr Account wird nun manuell geprüft und freigeschaltet. Sie erhalten eine Benachrichtigung per E-Mail.";
+        }
+        else
+        {
+            var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+            var errorMessage = problemDetails?.Detail ?? "Es ist ein Fehler aufgetreten.";
 
-        ModelState.AddModelError(string.Empty, "Registration failed.");
+            ModelState.AddModelError(string.Empty, errorMessage);
+        }
+
         return Page();
     }
 }
