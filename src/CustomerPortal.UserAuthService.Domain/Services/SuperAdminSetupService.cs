@@ -23,7 +23,7 @@ public class SuperAdminSetupService(
             new RegisterUserData(email, password, "Super", "Admin", UserRole.SuperAdmin)
         );
 
-        user.Approve();
+        user.Approve(customerNo: -1);
 
         await userRepository.Save(user);
     }

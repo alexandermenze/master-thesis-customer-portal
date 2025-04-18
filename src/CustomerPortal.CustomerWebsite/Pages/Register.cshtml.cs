@@ -1,3 +1,4 @@
+using CustomerPortal.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -32,8 +33,10 @@ public class RegisterModel(IHttpClientFactory httpClientFactory) : PageModel
         }
         else
         {
-            var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-            var errorMessage = problemDetails?.Detail ?? "Es ist ein Fehler aufgetreten.";
+            var (stringValue, problemDetails) =
+                await response.Content.ReadFromJsonSafeAsync<ProblemDetails>();
+            var errorMessage =
+                problemDetails?.Detail ?? stringValue ?? "Es ist ein Fehler aufgetreten.";
 
             ModelState.AddModelError(string.Empty, errorMessage);
         }

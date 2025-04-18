@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CustomerPortal.Extensions\CustomerPortal.Extensions.csproj" />
+    <ProjectReference Include="..\CustomerPortal.Messages\CustomerPortal.Messages.csproj" />
   </ItemGroup>
 
 </Project>

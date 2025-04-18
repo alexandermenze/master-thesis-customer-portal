@@ -6,7 +6,7 @@ namespace CustomerPortal.UserAuthService.Domain.Services;
 
 public class UserManagementService(IUserRepository userRepository) : IUserManagementService
 {
-    public async Task<User> Approve(Guid approverGuid, Guid candidateGuid)
+    public async Task<User> Approve(Guid approverGuid, Guid candidateGuid, int customerNo)
     {
         var approver = await userRepository.GetById(approverGuid);
         var candidate = await userRepository.GetById(candidateGuid);
@@ -17,7 +17,7 @@ public class UserManagementService(IUserRepository userRepository) : IUserManage
         if (AllowsStateChange(approver.Role, candidate.Role) is false)
             throw new DomainValidationException("Insufficient rights to approve.");
 
-        candidate.Approve();
+        candidate.Approve(customerNo);
         await userRepository.Save(candidate);
 
         return candidate;

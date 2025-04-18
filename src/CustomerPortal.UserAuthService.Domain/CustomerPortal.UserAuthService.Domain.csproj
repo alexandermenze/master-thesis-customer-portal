@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CustomerPortal.Messages\CustomerPortal.Messages.csproj" />
+  </ItemGroup>
+
 </Project>

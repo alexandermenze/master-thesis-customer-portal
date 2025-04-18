@@ -16,16 +16,18 @@ public class User(Guid id, UserData userData)
     public string LastName { get; private set; } = userData.LastName;
     public UserRole Role { get; private set; } = userData.Role;
     public UserState State { get; private set; } = UserState.Pending;
+    public int? CustomerNo { get; private set; }
 
     private readonly List<SessionToken> _sessionTokens = [];
     public IReadOnlyList<SessionToken> SessionTokens => _sessionTokens.AsReadOnly();
 
-    public void Approve()
+    public void Approve(int customerNo)
     {
         if (State is not UserState.Pending)
             throw new DomainValidationException("User is not pending.");
 
         State = UserState.Approved;
+        CustomerNo = customerNo;
     }
 
     public void Deactivate()

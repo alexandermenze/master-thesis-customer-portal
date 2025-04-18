@@ -1,4 +1,4 @@
-namespace CustomerPortal.UserAuthService.Dtos;
+namespace CustomerPortal.Messages.Dtos;
 
 public record RegisterCustomerUserDto(
     string Email,
