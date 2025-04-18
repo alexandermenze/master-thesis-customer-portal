@@ -1,7 +1,8 @@
 ﻿namespace CustomerPortal.Messages.Commands;
 
-public record CreateCustomerPriceListCommand(
+public record GenerateCustomerPriceListCommand(
     Guid Id,
+    Guid UserId,
     int CustomerNo,
     string SalesOrg,
     DateOnly PriceDate

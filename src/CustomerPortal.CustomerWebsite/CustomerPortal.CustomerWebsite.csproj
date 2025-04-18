@@ -11,4 +11,10 @@
     <ProjectReference Include="..\CustomerPortal.Messages\CustomerPortal.Messages.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="StackExchange.Redis">
+      <HintPath>..\..\..\..\..\..\.nuget\packages\stackexchange.redis\2.8.31\lib\net8.0\StackExchange.Redis.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

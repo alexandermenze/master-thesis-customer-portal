@@ -2,10 +2,15 @@ using System.Net.Http.Headers;
 using CustomerPortal.Messages.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using StackExchange.Redis;
 
 namespace CustomerPortal.CustomerWebsite.Pages;
 
-public class Tasks(ILogger<Tasks> logger, IHttpClientFactory httpClientFactory) : PageModel
+public class Tasks(
+    ILogger<Tasks> logger,
+    IHttpClientFactory httpClientFactory,
+    IConnectionMultiplexer redis
+) : PageModel
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UserAuthService");
 
@@ -42,5 +47,12 @@ public class Tasks(ILogger<Tasks> logger, IHttpClientFactory httpClientFactory) 
             logger.LogWarning(ex, "Failed to get user");
             return null;
         }
+    }
+
+    private async Task GetUserTasks(int customerNo)
+    {
+        var entries = await redis.GetDatabase().StreamReadAsync("tasks", "0-0");
+
+        // TODO: Somehow filter the tasks here and try to create the correct task state from it's events
     }
 }

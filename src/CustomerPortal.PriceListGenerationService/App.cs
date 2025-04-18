@@ -16,9 +16,9 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
         while (ct.IsCancellationRequested is false)
         {
             var result = await streamDatabase.Database.StreamReadGroupAsync(
-                streamDatabase.TaskStreamName,
+                streamDatabase.TasksStreamName,
                 streamDatabase.ConsumerGroupName,
-                consumerName: "catalog-generation-service-1",
+                consumerName: "price-list-generation-service",
                 position: ">",
                 count: 1
             );
@@ -30,11 +30,15 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
             }
 
             var message = result[0];
-            var body = message["Body"];
-            await ProcessMessage(body.ToString(), ct);
+
+            if (message["Type"] == nameof(GenerateCustomerPriceListCommand))
+            {
+                var body = message["Body"];
+                await ProcessMessage(body.ToString(), ct);
+            }
 
             await streamDatabase.Database.StreamAcknowledgeAsync(
-                streamDatabase.TaskStreamName,
+                streamDatabase.TasksStreamName,
                 streamDatabase.ConsumerGroupName,
                 message.Id
             );
@@ -44,20 +48,20 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
     private async Task SetupConsumer()
     {
         var streamExists = await streamDatabase.Database.KeyExistsAsync(
-            streamDatabase.TaskStreamName
+            streamDatabase.TasksStreamName
         );
 
         var consumerExists =
             streamExists
             && (
-                await streamDatabase.Database.StreamGroupInfoAsync(streamDatabase.TaskStreamName)
+                await streamDatabase.Database.StreamGroupInfoAsync(streamDatabase.TasksStreamName)
             ).Any(g => g.Name.Equals(streamDatabase.ConsumerGroupName));
 
         if (consumerExists)
             return;
 
         await streamDatabase.Database.StreamCreateConsumerGroupAsync(
-            streamDatabase.TaskStreamName,
+            streamDatabase.TasksStreamName,
             streamDatabase.ConsumerGroupName,
             "0-0"
         );
@@ -65,22 +69,43 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
 
     private async Task ProcessMessage(string body, CancellationToken ct)
     {
-        var createCustomerPricelistCommand =
-            JsonSerializer.Deserialize<CreateCustomerPriceListCommand>(body);
+        var generateCustomerPriceListCommand =
+            JsonSerializer.Deserialize<GenerateCustomerPriceListCommand>(body);
 
-        if (createCustomerPricelistCommand is null)
+        if (generateCustomerPriceListCommand is null)
             return;
 
+        await streamDatabase.Database.StreamAddAsync(
+            streamDatabase.TasksStreamName,
+            [
+                new NameValueEntry("Type", nameof(CustomerPriceListGenerationStartedEvent)),
+                new NameValueEntry("UserId", generateCustomerPriceListCommand.UserId.ToString()),
+                new NameValueEntry("CustomerNo", generateCustomerPriceListCommand.CustomerNo),
+                new NameValueEntry("CreatedAt", DateTimeOffset.UtcNow.ToString("O")),
+                new NameValueEntry(
+                    "Body",
+                    JsonSerializer.Serialize(
+                        new CustomerPriceListGenerationStartedEvent(
+                            Guid.CreateVersion7(),
+                            generateCustomerPriceListCommand.Id,
+                            generateCustomerPriceListCommand.SalesOrg,
+                            generateCustomerPriceListCommand.PriceDate
+                        )
+                    )
+                ),
+            ]
+        );
+
         var pdfMemoryStream = PriceListPdfGenerator.GeneratePdf(
-            createCustomerPricelistCommand.CustomerNo,
-            createCustomerPricelistCommand.SalesOrg,
-            createCustomerPricelistCommand.PriceDate
+            generateCustomerPriceListCommand.CustomerNo,
+            generateCustomerPriceListCommand.SalesOrg,
+            generateCustomerPriceListCommand.PriceDate
         );
 
         var dateTime = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss");
         var fileName =
-            $"PriceList_{Guid.CreateVersion7():N}_{dateTime}_{createCustomerPricelistCommand.SalesOrg}.pdf";
-        var filePath = $"{createCustomerPricelistCommand.CustomerNo}/price-lists/{fileName}";
+            $"PriceList_{Guid.CreateVersion7():N}_{dateTime}_{generateCustomerPriceListCommand.SalesOrg}.pdf";
+        var filePath = $"{generateCustomerPriceListCommand.CustomerNo}/price-lists/{fileName}";
 
         await minioClient.PutObjectAsync(
             new PutObjectArgs()
@@ -92,18 +117,20 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
         );
 
         await streamDatabase.Database.StreamAddAsync(
-            streamDatabase.ResponseStreamName,
+            streamDatabase.TasksStreamName,
             [
+                new NameValueEntry("Type", nameof(CustomerPriceListGeneratedEvent)),
+                new NameValueEntry("UserId", generateCustomerPriceListCommand.UserId.ToString()),
+                new NameValueEntry("CustomerNo", generateCustomerPriceListCommand.CustomerNo),
                 new NameValueEntry("CreatedAt", DateTimeOffset.UtcNow.ToString("O")),
                 new NameValueEntry(
                     "Body",
                     JsonSerializer.Serialize(
-                        new CustomerPriceListGenerationFinishedEvent(
+                        new CustomerPriceListGeneratedEvent(
                             Guid.CreateVersion7(),
-                            createCustomerPricelistCommand.Id,
-                            createCustomerPricelistCommand.CustomerNo,
-                            createCustomerPricelistCommand.SalesOrg,
-                            createCustomerPricelistCommand.PriceDate,
+                            generateCustomerPriceListCommand.Id,
+                            generateCustomerPriceListCommand.SalesOrg,
+                            generateCustomerPriceListCommand.PriceDate,
                             filePath
                         )
                     )
