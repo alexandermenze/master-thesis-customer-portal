@@ -75,9 +75,12 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
         if (generateCustomerPriceListCommand is null)
             return;
 
+        var taskId = Guid.CreateVersion7().ToString();
+
         await streamDatabase.Database.StreamAddAsync(
             streamDatabase.TasksStreamName,
             [
+                new NameValueEntry("TaskId", taskId),
                 new NameValueEntry("Type", nameof(CustomerPriceListGenerationStartedEvent)),
                 new NameValueEntry("UserId", generateCustomerPriceListCommand.UserId.ToString()),
                 new NameValueEntry("CustomerNo", generateCustomerPriceListCommand.CustomerNo),
@@ -119,6 +122,7 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
         await streamDatabase.Database.StreamAddAsync(
             streamDatabase.TasksStreamName,
             [
+                new NameValueEntry("TaskId", taskId),
                 new NameValueEntry("Type", nameof(CustomerPriceListGeneratedEvent)),
                 new NameValueEntry("UserId", generateCustomerPriceListCommand.UserId.ToString()),
                 new NameValueEntry("CustomerNo", generateCustomerPriceListCommand.CustomerNo),

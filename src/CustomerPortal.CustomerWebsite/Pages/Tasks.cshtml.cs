@@ -1,5 +1,7 @@
+using System.Collections.Immutable;
 using System.Net.Http.Headers;
 using CustomerPortal.Messages.Dtos;
+using CustomerPortal.Messages.Events;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using StackExchange.Redis;
@@ -53,6 +55,55 @@ public class Tasks(
     {
         var entries = await redis.GetDatabase().StreamReadAsync("tasks", "0-0");
 
-        // TODO: Somehow filter the tasks here and try to create the correct task state from it's events
+        var state = new Dictionary<Guid, TaskStatus>();
+
+        foreach (var entry in entries)
+        {
+            if (entry["CustomerNo"] != customerNo)
+                continue;
+
+            var taskId = Guid.TryParse(entry["TaskId"], out var id) ? (Guid?)id : null;
+
+            if (taskId is null)
+                continue;
+
+            var entryType = entry["Type"];
+
+            if (entryType.HasValue is false)
+                continue;
+
+            var taskStatusChange = entryType.ToString() switch
+            {
+                nameof(CustomerPriceListGenerationStartedEvent) =>
+                    MapFromCustomerPriceListGenerationStartedEvent(entry),
+                nameof(CustomerPriceListGeneratedEvent) => MapFromCustomerPriceListGeneratedEvent(
+                    entry
+                ),
+                _ => null,
+            };
+
+            var taskState =
+                state.GetValueOrDefault(taskId.Value) ?? new TaskStatus(taskId.Value, [], null);
+
+            taskState = taskState with { History = taskState.History.Add("") };
+        }
     }
+
+    private TaskStatusChange MapFromCustomerPriceListGenerationStartedEvent(StreamEntry entry)
+    {
+        throw new NotImplementedException();
+    }
+
+    private TaskStatusChange MapFromCustomerPriceListGeneratedEvent(StreamEntry generatedEvent)
+    {
+        throw new NotImplementedException();
+    }
+
+    private record TaskStatus(Guid Id, ImmutableArray<TaskStatusChange> History);
+
+    private record TaskStatusChange(
+        DateTimeOffset DateTime,
+        string Description,
+        string? FileDownloadLink
+    );
 }
