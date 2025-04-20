@@ -37,6 +37,8 @@ services.AddSingleton(
 
 services.AddSingleton(new MinioAppConfig(config.GetValueOrThrow<string>("MinIO:Bucket")));
 
+services.AddTransient<App>();
+
 var serviceProvider = services.BuildServiceProvider();
 
 await serviceProvider.GetRequiredService<App>().Run(CancellationToken.None);

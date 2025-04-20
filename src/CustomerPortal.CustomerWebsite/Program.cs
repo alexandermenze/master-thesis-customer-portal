@@ -54,9 +54,6 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
-    app.UseExceptionHandler("/Error");
-
 app.UseRouting();
 
 app.UseAuthentication();
