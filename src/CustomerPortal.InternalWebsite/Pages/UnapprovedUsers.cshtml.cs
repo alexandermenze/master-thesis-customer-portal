@@ -29,6 +29,7 @@ public class UnapprovedUsers(ILogger<UnapprovedUsers> logger, IHttpClientFactory
             "Bearer",
             bearerToken
         );
+
         var response = await _httpClient.GetAsync("/users/unapproved");
 
         if (response.IsSuccessStatusCode)
