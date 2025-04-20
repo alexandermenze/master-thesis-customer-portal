@@ -28,7 +28,9 @@ public class UploadCustomerFile(
         if (!ModelState.IsValid)
             return Page();
 
-        if (await GetCurrentUser() is null)
+        var currentUser = await GetCurrentUser();
+
+        if (currentUser is null)
             return RedirectToPage("Login");
 
         if (Upload is null || Upload.Length == 0)
@@ -50,6 +52,13 @@ public class UploadCustomerFile(
             .WithContentType(Upload.ContentType);
 
         await minio.PutObjectAsync(putArgs);
+
+        logger.LogInformation(
+            "File {FilePath} was uploaded by {UserId} for customer {CustomerNo}",
+            filePath,
+            currentUser.Id,
+            CustomerNo
+        );
 
         Message = $"Datei {fileName} wurde erfolgreich für Nutzer {CustomerNo} hochgeladen.";
         return Page();
