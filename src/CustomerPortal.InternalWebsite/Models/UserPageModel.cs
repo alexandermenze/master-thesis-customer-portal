@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Text;
 using CustomerPortal.Messages.Dtos;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -10,26 +11,26 @@ public class UserPageModel(ILogger logger, IHttpClientFactory httpClientFactory)
 
     protected async Task<UserResponseDto?> GetCurrentUser()
     {
-        var token = User.FindFirst("BearerToken")?.Value;
+        var bearerToken = User.FindFirst("BearerToken")?.Value;
 
-        if (token is null)
+        if (bearerToken is null)
             return null;
 
-        var currentUser = await GetCurrentUser(token);
+        var currentUser = await GetCurrentUser(bearerToken);
 
         if (currentUser?.CustomerNo is null)
             return null;
 
-        return await GetCurrentUser(token);
+        return await GetCurrentUser(bearerToken);
     }
 
-    private async Task<UserResponseDto?> GetCurrentUser(string token)
+    protected async Task<UserResponseDto?> GetCurrentUser(string bearerToken)
     {
         try
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
                 "Bearer",
-                token
+                bearerToken
             );
 
             return await _httpClient.GetFromJsonAsync<UserResponseDto>("users/me");
