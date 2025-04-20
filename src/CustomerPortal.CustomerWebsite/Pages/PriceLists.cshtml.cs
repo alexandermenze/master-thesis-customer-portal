@@ -16,7 +16,7 @@ public class PriceLists(
     IConnectionMultiplexer redis,
     RedisConfig redisConfig,
     IMinioClient minio,
-    MinIOConfig minioConfig
+    MinioAppConfig minioConfig
 ) : UserPageModel(logger, httpClientFactory)
 {
     public class TaskViewModel

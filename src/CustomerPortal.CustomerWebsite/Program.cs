@@ -44,7 +44,10 @@ builder.Services.AddMinio(o =>
 });
 
 builder.Services.AddSingleton(
-    new MinIOConfig(builder.Configuration.GetValueOrThrow<string>("MinIO:BucketName"))
+    new MinioAppConfig(
+        builder.Configuration.GetValueOrThrow<string>("MinIO:BucketName"),
+        builder.Configuration.GetValueOrThrow<string>("MinIO:GenericFilesPath")
+    )
 );
 
 builder.Services.AddRazorPages();
