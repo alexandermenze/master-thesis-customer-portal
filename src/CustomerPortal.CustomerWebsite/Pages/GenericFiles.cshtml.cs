@@ -66,6 +66,13 @@ public class GenericFiles(
 
         memoryStream.Position = 0;
         var downloadName = Path.GetFileName(filePath);
+
+        logger.LogInformation(
+            "Generic file {FilePath} downloaded by user {UserId}",
+            filePath,
+            currentUser.Id
+        );
+
         return File(memoryStream, "application/octet-stream", downloadName);
     }
 }

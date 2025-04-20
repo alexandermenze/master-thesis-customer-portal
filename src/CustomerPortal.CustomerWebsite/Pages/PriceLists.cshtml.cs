@@ -98,6 +98,13 @@ public class PriceLists(
 
         memoryStream.Position = 0;
         const string contentType = "application/pdf";
+
+        logger.LogInformation(
+            "Price list {FilePath} downloaded by user {UserId}",
+            filePath,
+            currentUser.Id
+        );
+
         return File(memoryStream, contentType, fileName);
     }
 

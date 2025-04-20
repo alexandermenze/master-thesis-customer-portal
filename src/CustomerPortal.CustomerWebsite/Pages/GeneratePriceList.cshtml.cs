@@ -53,6 +53,12 @@ public class GeneratePriceList(
 
         db.StreamAdd(redisConfig.TasksStreamName, fields);
 
+        logger.LogInformation(
+            "Price list generation triggered for customer {CustomerNo} by user {UserId}",
+            currentUser.CustomerNo.Value,
+            currentUser.Id
+        );
+
         return RedirectToPage("Tasks");
     }
 }
