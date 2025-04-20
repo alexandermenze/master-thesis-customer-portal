@@ -1,5 +1,6 @@
 using CustomerPortal.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Minio;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +27,16 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
         builder.Configuration.GetValueOrThrow<string>("Redis:ConnectionString")
     )
 );
+
+builder.Services.AddMinio(o =>
+{
+    o.WithEndpoint(builder.Configuration.GetValueOrThrow<string>("MinIO:Endpoint"))
+        .WithCredentials(
+            builder.Configuration.GetValueOrThrow<string>("MinIO:AccessKey"),
+            builder.Configuration.GetValueOrThrow<string>("MinIO:SecretKey")
+        )
+        .WithSSL(false);
+});
 
 builder.Services.AddRazorPages();
 

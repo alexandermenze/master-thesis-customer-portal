@@ -31,7 +31,7 @@ public class UserController(
         return Ok(userResponseDtos);
     }
 
-    [HttpGet]
+    [HttpGet("unapproved")]
     [Authorize(Policies.AtLeastSalesDepartment)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserResponseDto>))]
     public async Task<IActionResult> GetUnapprovedUsers()
