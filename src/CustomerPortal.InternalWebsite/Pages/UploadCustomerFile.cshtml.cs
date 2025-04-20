@@ -28,6 +28,9 @@ public class UploadCustomerFile(
         if (!ModelState.IsValid)
             return Page();
 
+        if (await GetCurrentUser() is null)
+            return RedirectToPage("Login");
+
         if (Upload is null || Upload.Length == 0)
         {
             ModelState.AddModelError(nameof(Upload), "Bitte eine Datei auswählen.");
@@ -44,7 +47,7 @@ public class UploadCustomerFile(
             .WithObject(filePath)
             .WithStreamData(stream)
             .WithObjectSize(Upload.Length)
-            .WithContentType(Upload.ContentType ?? "application/octet-stream");
+            .WithContentType(Upload.ContentType);
 
         await minio.PutObjectAsync(putArgs);
 
