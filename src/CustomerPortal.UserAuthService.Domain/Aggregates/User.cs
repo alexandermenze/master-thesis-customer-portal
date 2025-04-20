@@ -23,8 +23,8 @@ public class User(Guid id, UserData userData)
 
     public void Approve(int customerNo)
     {
-        if (State is not UserState.Pending)
-            throw new DomainValidationException("User is not pending.");
+        if (State is UserState.Approved)
+            throw new DomainValidationException("User is already approved.");
 
         State = UserState.Approved;
         CustomerNo = customerNo;
@@ -32,8 +32,8 @@ public class User(Guid id, UserData userData)
 
     public void Deactivate()
     {
-        if (State is not UserState.Pending)
-            throw new DomainValidationException("User is not pending.");
+        if (State is UserState.Deactivated)
+            throw new DomainValidationException("User is already deactivated.");
 
         _sessionTokens.Clear();
         State = UserState.Deactivated;
