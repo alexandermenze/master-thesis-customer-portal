@@ -1,5 +1,7 @@
 using CustomerPortal.Extensions;
+using CustomerPortal.InternalWebsite.Configurations;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Minio;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +21,23 @@ builder
         options.LoginPath = "/Login";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
     });
+
+builder.Services.AddMinio(o =>
+{
+    o.WithEndpoint(builder.Configuration.GetValueOrThrow<string>("MinIO:Endpoint"))
+        .WithCredentials(
+            builder.Configuration.GetValueOrThrow<string>("MinIO:AccessKey"),
+            builder.Configuration.GetValueOrThrow<string>("MinIO:SecretKey")
+        )
+        .WithSSL(false);
+});
+
+builder.Services.AddSingleton(
+    new MinioAppConfig(
+        builder.Configuration.GetValueOrThrow<string>("MinIO:BucketName"),
+        builder.Configuration.GetValueOrThrow<string>("MinIO:GenericFilesPath")
+    )
+);
 
 builder.Services.AddRazorPages();
 
