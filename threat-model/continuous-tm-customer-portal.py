@@ -3,7 +3,7 @@
 from pytm import TM, Boundary, Actor, Datastore, Process, Dataflow
 
 tm = TM("Customer Portal")
-tm.description = "A customer self-service portal for contracts, pricelists and catalog data. The customer registration is out of scope since that is managed through another workflow"
+tm.description = "A customer self-service portal for contracts, price lists and catalog data. The customer registration is out of scope since that is managed through another workflow"
 
 tzInternet = Boundary("Internet")
 tzDMZ = Boundary("DMZ")
@@ -43,11 +43,23 @@ dfRegisterCustomer = Dataflow(actorUnregisteredCustomer, procWebsiteCustomers, "
 dfRegisterCustomer.protocol = "HTTPS"
 dfRegisterCustomer.dstPort = 443
 
-dfCustomerAccessWebsite = Dataflow(actorCustomer, procWebsiteCustomers, "Access task status; Request file generation")
-dfCustomerAccessWebsite.protocol = "HTTPS"
-dfCustomerAccessWebsite.dstPort = 443
+dfCustomerAccessPriceListGenStatus = Dataflow(actorCustomer, procWebsiteCustomers, "Access price list generation status")
+dfCustomerAccessPriceListGenStatus.protocol = "HTTPS"
+dfCustomerAccessPriceListGenStatus.dstPort = 443
 
-dfCustomerDownloadsFile = Dataflow(procWebsiteCustomers, actorCustomer, "Download file")
+dfCustomerAccessRequestPriceList = Dataflow(actorCustomer, procWebsiteCustomers, "Request price list generation")
+dfCustomerAccessRequestPriceList.protocol = "HTTPS"
+dfCustomerAccessRequestPriceList.dstPort = 443
+
+dfCustomerListGenericFiles = Dataflow(actorCustomer, procWebsiteCustomers, "List generic customer files")
+dfCustomerListGenericFiles.protocol = "HTTPS"
+dfCustomerListGenericFiles.dstPort = 443
+
+dfCustomerDownloadsFile = Dataflow(procWebsiteCustomers, actorCustomer, "Download generic file")
+dfCustomerDownloadsFile.protocol = "HTTPS"
+dfCustomerDownloadsFile.dstPort = 443
+
+dfCustomerDownloadsFile = Dataflow(procWebsiteCustomers, actorCustomer, "Download price list file")
 dfCustomerDownloadsFile.protocol = "HTTPS"
 dfCustomerDownloadsFile.dstPort = 443
 
@@ -95,17 +107,17 @@ def fileGenerationProcesses(customerFileStorage: Datastore, taskStatusProcess: P
     dfCustomerCheckTaskStatus.protocol = "TCP"
     dfCustomerCheckTaskStatus.dstPort = 1234
 
-    dfRequestFileGeneration = Dataflow(taskStatusProcess, storeTaskMessageQueue, "Request customer file generation")
+    dfRequestFileGeneration = Dataflow(taskStatusProcess, storeTaskMessageQueue, "Request price list generation")
 
-    dfStartPriceListGenerationTask = Dataflow(storeTaskMessageQueue, procPriceListGenerationService, "Request new pricelist generation")
+    dfStartPriceListGenerationTask = Dataflow(storeTaskMessageQueue, procPriceListGenerationService, "Request new price list generation")
     dfStartPriceListGenerationTask.protocol = "TCP"
     dfStartPriceListGenerationTask.dstPort = 1234
 
-    dfEndPriceListGenerationTask = Dataflow(procPriceListGenerationService, storeTaskMessageQueue, "Inform about finished task")
-    dfEndPriceListGenerationTask.protocol = "TCP"
-    dfEndPriceListGenerationTask.dstPort = 1234
+    dfStatusPriceListGenerationTask = Dataflow(procPriceListGenerationService, storeTaskMessageQueue, "Inform about task status")
+    dfStatusPriceListGenerationTask.protocol = "TCP"
+    dfStatusPriceListGenerationTask.dstPort = 1234
 
-    dfPriceListFileSave = Dataflow(procPriceListGenerationService, storeCustomerFiles, "Store generated pricelist file")
+    dfPriceListFileSave = Dataflow(procPriceListGenerationService, storeCustomerFiles, "Store generated price list file")
     dfPriceListFileSave.protocol = "S3"
     dfPriceListFileSave.dstPort = 443
 
