@@ -42,4 +42,30 @@ public class GenericFiles(
 
         return Page();
     }
+
+    public async Task<IActionResult> OnPostDownloadAsync(string fileName)
+    {
+        // TODO: Sanitize input
+
+        var currentUser = await GetCurrentUser();
+
+        if (currentUser?.CustomerNo is null)
+            return RedirectToPage("/Login");
+
+        var filePrefix = $"{currentUser.CustomerNo}/{minioConfig.GenericFilesPath}/";
+        var filePath = $"{filePrefix}{fileName}";
+
+        var memoryStream = new MemoryStream();
+
+        await minio.GetObjectAsync(
+            new GetObjectArgs()
+                .WithBucket(minioConfig.BucketName)
+                .WithObject(filePath)
+                .WithCallbackStream(s => s.CopyTo(memoryStream))
+        );
+
+        memoryStream.Position = 0;
+        var downloadName = Path.GetFileName(filePath);
+        return File(memoryStream, "application/octet-stream", downloadName);
+    }
 }
