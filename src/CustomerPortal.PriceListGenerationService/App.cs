@@ -105,6 +105,9 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
             generateCustomerPriceListCommand.PriceDate
         );
 
+        // Simulate delay
+        await Task.Delay(5000, ct);
+
         var dateTime = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss");
         var fileName =
             $"PriceList_{Guid.CreateVersion7():N}_{dateTime}_{generateCustomerPriceListCommand.SalesOrg}.pdf";

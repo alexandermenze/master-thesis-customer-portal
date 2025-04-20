@@ -1,3 +1,4 @@
+using CustomerPortal.CustomerWebsite.Configurations;
 using CustomerPortal.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Minio;
@@ -28,6 +29,10 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
     )
 );
 
+builder.Services.AddSingleton(
+    new RedisConfig(builder.Configuration.GetValueOrThrow<string>("Redis:TasksStreamName"))
+);
+
 builder.Services.AddMinio(o =>
 {
     o.WithEndpoint(builder.Configuration.GetValueOrThrow<string>("MinIO:Endpoint"))
@@ -37,6 +42,10 @@ builder.Services.AddMinio(o =>
         )
         .WithSSL(false);
 });
+
+builder.Services.AddSingleton(
+    new MinIOConfig(builder.Configuration.GetValueOrThrow<string>("MinIO:BucketName"))
+);
 
 builder.Services.AddRazorPages();
 

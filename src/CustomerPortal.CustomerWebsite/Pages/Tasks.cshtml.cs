@@ -1,10 +1,9 @@
 using System.Collections.Immutable;
-using System.Net.Http.Headers;
 using System.Text.Json;
-using CustomerPortal.Messages.Dtos;
+using CustomerPortal.CustomerWebsite.Configurations;
+using CustomerPortal.CustomerWebsite.Models;
 using CustomerPortal.Messages.Events;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Minio;
 using Minio.DataModel.Args;
 using StackExchange.Redis;
@@ -15,8 +14,10 @@ public class Tasks(
     ILogger<Tasks> logger,
     IHttpClientFactory httpClientFactory,
     IConnectionMultiplexer redis,
-    IMinioClient minio
-) : PageModel
+    RedisConfig redisConfig,
+    IMinioClient minio,
+    MinIOConfig minioConfig
+) : UserPageModel(logger, httpClientFactory)
 {
     public class TaskViewModel
     {
@@ -26,24 +27,15 @@ public class Tasks(
         public bool HasDownload { get; set; }
     }
 
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("UserAuthService");
-
     public ImmutableArray<TaskViewModel> TaskViewModels { get; set; } =
         ImmutableArray<TaskViewModel>.Empty;
 
     public async Task<IActionResult> OnGet()
     {
-        var token = User.FindFirst("BearerToken")?.Value;
-
-        if (token is null)
-            return RedirectToPage("/Login");
-
-        var currentUser = await GetCurrentUser(token);
+        var currentUser = await GetCurrentUser();
 
         if (currentUser?.CustomerNo is null)
             return RedirectToPage("/Login");
-
-        ViewData["CurrentUser"] = currentUser;
 
         var userTasks = await GetUserTasks(currentUser.CustomerNo.Value);
 
@@ -81,12 +73,7 @@ public class Tasks(
 
     public async Task<IActionResult> OnPostDownload(Guid id)
     {
-        var token = User.FindFirst("BearerToken")?.Value;
-
-        if (token is null)
-            return RedirectToPage("/Login");
-
-        var currentUser = await GetCurrentUser(token);
+        var currentUser = await GetCurrentUser();
 
         if (currentUser?.CustomerNo is null)
             return RedirectToPage("/Login");
@@ -98,13 +85,11 @@ public class Tasks(
             .Last(t => t.FileDownloadLink is not null)
             .FileDownloadLink;
 
-        const string bucketName = "customer-files";
-
         var memoryStream = new MemoryStream();
 
         await minio.GetObjectAsync(
             new GetObjectArgs()
-                .WithBucket(bucketName)
+                .WithBucket(minioConfig.BucketName)
                 .WithObject(filePath)
                 .WithCallbackStream(stream => stream.CopyTo(memoryStream))
         );
@@ -116,27 +101,9 @@ public class Tasks(
         return File(memoryStream, contentType, fileName);
     }
 
-    private async Task<UserResponseDto?> GetCurrentUser(string token)
-    {
-        try
-        {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-                "Bearer",
-                token
-            );
-
-            return await _httpClient.GetFromJsonAsync<UserResponseDto>("users/me");
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "Failed to get user");
-            return null;
-        }
-    }
-
     private async Task<Dictionary<Guid, TaskStatus>> GetUserTasks(int customerNo)
     {
-        var entries = await redis.GetDatabase().StreamReadAsync("tasks", "0-0");
+        var entries = await redis.GetDatabase().StreamReadAsync(redisConfig.TasksStreamName, "0-0");
 
         var state = new Dictionary<Guid, TaskStatus>();
 
