@@ -1,10 +1,14 @@
 using CustomerPortal.UserAuthService.Domain.Aggregates;
 using CustomerPortal.UserAuthService.Domain.Exceptions;
 using CustomerPortal.UserAuthService.Domain.Repositories;
+using Microsoft.Extensions.Logging;
 
 namespace CustomerPortal.UserAuthService.Domain.Services;
 
-public class UserManagementService(IUserRepository userRepository) : IUserManagementService
+public class UserManagementService(
+    ILogger<UserManagementService> logger,
+    IUserRepository userRepository
+) : IUserManagementService
 {
     public async Task<User> Approve(Guid approverGuid, Guid candidateGuid, int customerNo)
     {
@@ -19,6 +23,12 @@ public class UserManagementService(IUserRepository userRepository) : IUserManage
 
         candidate.Approve(customerNo);
         await userRepository.Save(candidate);
+
+        logger.LogInformation(
+            "Candidate {CandidateId} was approved by {ApproverId}.",
+            candidateGuid,
+            approverGuid
+        );
 
         return candidate;
     }
@@ -36,6 +46,12 @@ public class UserManagementService(IUserRepository userRepository) : IUserManage
 
         candidate.Deactivate();
         await userRepository.Save(candidate);
+
+        logger.LogInformation(
+            "User {CandidateId} was deactivated by {UserId}.",
+            candidateGuid,
+            deactivatingPartyGuid
+        );
 
         return candidate;
     }

@@ -1,9 +1,13 @@
 using CustomerPortal.UserAuthService.Domain.Exceptions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace CustomerPortal.UserAuthService.Domain.Services;
 
-public class PasswordService(IPasswordHasher<string> passwordHasher) : IPasswordService
+public class PasswordService(
+    ILogger<PasswordService> logger,
+    IPasswordHasher<string> passwordHasher
+) : IPasswordService
 {
     public void EnsureRequirementsAreMet(string password)
     {
@@ -14,13 +18,20 @@ public class PasswordService(IPasswordHasher<string> passwordHasher) : IPassword
     public string HashPassword(string email, string password) =>
         passwordHasher.HashPassword(email, password);
 
-    public bool VerifyPassword(string email, string hashedPassword, string password) =>
-        passwordHasher.VerifyHashedPassword(email, hashedPassword, password) switch
+    public bool VerifyPassword(string email, string hashedPassword, string password)
+    {
+        return passwordHasher.VerifyHashedPassword(email, hashedPassword, password) switch
         {
             PasswordVerificationResult.Success => true,
-            // Ignored in demo application
-            PasswordVerificationResult.SuccessRehashNeeded => true,
+            PasswordVerificationResult.SuccessRehashNeeded => LogAndAccept(),
             PasswordVerificationResult.Failed => false,
             _ => false,
         };
+
+        bool LogAndAccept()
+        {
+            logger.LogWarning("Outdated password hashing algorithm detected. Implement rehash.");
+            return true;
+        }
+    }
 }
