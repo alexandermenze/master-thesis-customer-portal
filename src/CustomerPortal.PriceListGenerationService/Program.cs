@@ -1,6 +1,8 @@
 ﻿using CustomerPortal.Extensions;
 using CustomerPortal.PriceListGenerationService;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Minio;
 using StackExchange.Redis;
 
@@ -9,30 +11,32 @@ var config = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
-var redisConfig = config.GetSection("Redis");
+var services = new ServiceCollection();
 
-await using var redis = await ConnectionMultiplexer.ConnectAsync(
-    redisConfig.GetValueOrThrow<string>("ConnectionString")
+services.AddLogging(o => o.AddConsole());
+services.AddSingleton<IConnectionMultiplexer>(
+    await ConnectionMultiplexer.ConnectAsync(
+        config.GetValueOrThrow<string>("Redis:ConnectionString")
+    )
 );
 
-var minioConfig = config.GetSection("MinIO");
+services.AddMinio(o =>
+    o.WithEndpoint(config.GetValueOrThrow<string>("MinIO:Endpoint"))
+        .WithCredentials(
+            config.GetValueOrThrow<string>("MinIO:AccessKey"),
+            config.GetValueOrThrow<string>("MinIO:SecretKey")
+        )
+);
 
-var minioBucket = minioConfig.GetValueOrThrow<string>("Bucket");
-
-var minio = new MinioClient()
-    .WithEndpoint(minioConfig.GetValueOrThrow<string>("Endpoint"))
-    .WithCredentials(
-        minioConfig.GetValueOrThrow<string>("AccessKey"),
-        minioConfig.GetValueOrThrow<string>("SecretKey")
+services.AddSingleton(
+    new RedisConfig(
+        config.GetValueOrThrow<string>("Redis:TasksStreamName"),
+        config.GetValueOrThrow<string>("Redis:ConsumerGroupName")
     )
-    .Build();
+);
 
-await new App(
-    new StreamDatabase(
-        redis.GetDatabase(),
-        redisConfig.GetValueOrThrow<string>("TasksStreamName"),
-        redisConfig.GetValueOrThrow<string>("ConsumerGroupName")
-    ),
-    minio,
-    minioBucket
-).Run(CancellationToken.None);
+services.AddSingleton(new MinioAppConfig(config.GetValueOrThrow<string>("MinIO:Bucket")));
+
+var serviceProvider = services.BuildServiceProvider();
+
+await serviceProvider.GetRequiredService<App>().Run(CancellationToken.None);

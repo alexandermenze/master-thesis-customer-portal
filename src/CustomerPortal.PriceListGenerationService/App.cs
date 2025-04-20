@@ -1,27 +1,41 @@
+using System.Diagnostics;
 using System.Text.Json;
 using CustomerPortal.Messages.Commands;
 using CustomerPortal.Messages.Events;
+using Microsoft.Extensions.Logging;
 using Minio;
 using Minio.DataModel.Args;
 using StackExchange.Redis;
 
 namespace CustomerPortal.PriceListGenerationService;
 
-public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string minioBucket)
+public class App(
+    ILogger<App> logger,
+    IConnectionMultiplexer redis,
+    RedisConfig redisConfig,
+    IMinioClient minioClient,
+    MinioAppConfig minioAppConfig
+)
 {
+    private readonly Guid _serviceId = Guid.CreateVersion7();
+
     public async Task Run(CancellationToken ct)
     {
+        logger.LogInformation("Running PriceListGenerationService {ServiceId}", _serviceId);
+
         await SetupConsumer();
 
         while (ct.IsCancellationRequested is false)
         {
-            var result = await streamDatabase.Database.StreamReadGroupAsync(
-                streamDatabase.TasksStreamName,
-                streamDatabase.ConsumerGroupName,
-                consumerName: "price-list-generation-service",
-                position: ">",
-                count: 1
-            );
+            var result = await redis
+                .GetDatabase()
+                .StreamReadGroupAsync(
+                    redisConfig.TasksStreamName,
+                    redisConfig.ConsumerGroupName,
+                    consumerName: "price-list-generation-service",
+                    position: ">",
+                    count: 1
+                );
 
             if (result.Length is not 1)
             {
@@ -37,67 +51,83 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
                 await ProcessMessage(body.ToString(), ct);
             }
 
-            await streamDatabase.Database.StreamAcknowledgeAsync(
-                streamDatabase.TasksStreamName,
-                streamDatabase.ConsumerGroupName,
-                message.Id
-            );
+            await redis
+                .GetDatabase()
+                .StreamAcknowledgeAsync(
+                    redisConfig.TasksStreamName,
+                    redisConfig.ConsumerGroupName,
+                    message.Id
+                );
         }
+
+        logger.LogInformation("Stopped PriceListGenerationService {ServiceId}", _serviceId);
     }
 
     private async Task SetupConsumer()
     {
-        var streamExists = await streamDatabase.Database.KeyExistsAsync(
-            streamDatabase.TasksStreamName
-        );
+        var streamExists = await redis.GetDatabase().KeyExistsAsync(redisConfig.TasksStreamName);
 
         var consumerExists =
             streamExists
-            && (
-                await streamDatabase.Database.StreamGroupInfoAsync(streamDatabase.TasksStreamName)
-            ).Any(g => g.Name.Equals(streamDatabase.ConsumerGroupName));
+            && (await redis.GetDatabase().StreamGroupInfoAsync(redisConfig.TasksStreamName)).Any(
+                g => g.Name.Equals(redisConfig.ConsumerGroupName)
+            );
 
         if (consumerExists)
             return;
 
-        await streamDatabase.Database.StreamCreateConsumerGroupAsync(
-            streamDatabase.TasksStreamName,
-            streamDatabase.ConsumerGroupName,
-            "0-0"
+        await redis
+            .GetDatabase()
+            .StreamCreateConsumerGroupAsync(
+                redisConfig.TasksStreamName,
+                redisConfig.ConsumerGroupName,
+                "0-0"
+            );
+
+        logger.LogInformation(
+            "Created consumer group {GroupName} for task stream {StreamName}",
+            redisConfig.ConsumerGroupName,
+            redisConfig.TasksStreamName
         );
     }
 
     private async Task ProcessMessage(string body, CancellationToken ct)
     {
+        var stopwatch = Stopwatch.StartNew();
+        var taskId = Guid.CreateVersion7().ToString();
+
         var generateCustomerPriceListCommand =
             JsonSerializer.Deserialize<GenerateCustomerPriceListCommand>(body);
 
         if (generateCustomerPriceListCommand is null)
             return;
 
-        var taskId = Guid.CreateVersion7().ToString();
-
-        await streamDatabase.Database.StreamAddAsync(
-            streamDatabase.TasksStreamName,
-            [
-                new NameValueEntry("TaskId", taskId),
-                new NameValueEntry("Type", nameof(CustomerPriceListGenerationStartedEvent)),
-                new NameValueEntry("UserId", generateCustomerPriceListCommand.UserId.ToString()),
-                new NameValueEntry("CustomerNo", generateCustomerPriceListCommand.CustomerNo),
-                new NameValueEntry("CreatedAt", DateTimeOffset.UtcNow.ToString("O")),
-                new NameValueEntry(
-                    "Body",
-                    JsonSerializer.Serialize(
-                        new CustomerPriceListGenerationStartedEvent(
-                            Guid.CreateVersion7(),
-                            generateCustomerPriceListCommand.Id,
-                            generateCustomerPriceListCommand.SalesOrg,
-                            generateCustomerPriceListCommand.PriceDate
+        await redis
+            .GetDatabase()
+            .StreamAddAsync(
+                redisConfig.TasksStreamName,
+                [
+                    new NameValueEntry("TaskId", taskId),
+                    new NameValueEntry("Type", nameof(CustomerPriceListGenerationStartedEvent)),
+                    new NameValueEntry(
+                        "UserId",
+                        generateCustomerPriceListCommand.UserId.ToString()
+                    ),
+                    new NameValueEntry("CustomerNo", generateCustomerPriceListCommand.CustomerNo),
+                    new NameValueEntry("CreatedAt", DateTimeOffset.UtcNow.ToString("O")),
+                    new NameValueEntry(
+                        "Body",
+                        JsonSerializer.Serialize(
+                            new CustomerPriceListGenerationStartedEvent(
+                                Guid.CreateVersion7(),
+                                generateCustomerPriceListCommand.Id,
+                                generateCustomerPriceListCommand.SalesOrg,
+                                generateCustomerPriceListCommand.PriceDate
+                            )
                         )
-                    )
-                ),
-            ]
-        );
+                    ),
+                ]
+            );
 
         var pdfMemoryStream = PriceListPdfGenerator.GeneratePdf(
             generateCustomerPriceListCommand.CustomerNo,
@@ -118,31 +148,42 @@ public class App(StreamDatabase streamDatabase, IMinioClient minioClient, string
                 .WithStreamData(pdfMemoryStream)
                 .WithObject(filePath)
                 .WithObjectSize(pdfMemoryStream.Length)
-                .WithBucket(minioBucket),
+                .WithBucket(minioAppConfig.BucketName),
             ct
         );
 
-        await streamDatabase.Database.StreamAddAsync(
-            streamDatabase.TasksStreamName,
-            [
-                new NameValueEntry("TaskId", taskId),
-                new NameValueEntry("Type", nameof(CustomerPriceListGeneratedEvent)),
-                new NameValueEntry("UserId", generateCustomerPriceListCommand.UserId.ToString()),
-                new NameValueEntry("CustomerNo", generateCustomerPriceListCommand.CustomerNo),
-                new NameValueEntry("CreatedAt", DateTimeOffset.UtcNow.ToString("O")),
-                new NameValueEntry(
-                    "Body",
-                    JsonSerializer.Serialize(
-                        new CustomerPriceListGeneratedEvent(
-                            Guid.CreateVersion7(),
-                            generateCustomerPriceListCommand.Id,
-                            generateCustomerPriceListCommand.SalesOrg,
-                            generateCustomerPriceListCommand.PriceDate,
-                            filePath
+        await redis
+            .GetDatabase()
+            .StreamAddAsync(
+                redisConfig.TasksStreamName,
+                [
+                    new NameValueEntry("TaskId", taskId),
+                    new NameValueEntry("Type", nameof(CustomerPriceListGeneratedEvent)),
+                    new NameValueEntry(
+                        "UserId",
+                        generateCustomerPriceListCommand.UserId.ToString()
+                    ),
+                    new NameValueEntry("CustomerNo", generateCustomerPriceListCommand.CustomerNo),
+                    new NameValueEntry("CreatedAt", DateTimeOffset.UtcNow.ToString("O")),
+                    new NameValueEntry(
+                        "Body",
+                        JsonSerializer.Serialize(
+                            new CustomerPriceListGeneratedEvent(
+                                Guid.CreateVersion7(),
+                                generateCustomerPriceListCommand.Id,
+                                generateCustomerPriceListCommand.SalesOrg,
+                                generateCustomerPriceListCommand.PriceDate,
+                                filePath
+                            )
                         )
-                    )
-                ),
-            ]
+                    ),
+                ]
+            );
+
+        logger.LogInformation(
+            "Processed task {TaskId} in {Time}ms",
+            taskId,
+            stopwatch.ElapsedMilliseconds
         );
     }
 }
