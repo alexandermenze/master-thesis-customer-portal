@@ -5,8 +5,8 @@ from pytm import TM, Boundary, Actor, Datastore, Process, Dataflow
 tm = TM("Customer Portal")
 tm.description = "A customer self-service portal for contracts, price lists and catalog data. The customer registration is out of scope since that is managed through another workflow"
 
-tzInternet = Boundary("Internet")
 tzDMZ = Boundary("DMZ")
+tzInternet = Boundary("Internet")
 tzPrivateNetwork = Boundary("Internal Network")
 
 storeCustomerFiles = Datastore("Customer File Storage")
@@ -48,12 +48,12 @@ procPriceListGenerationService.inBoundary = tzPrivateNetwork
 
 # Dataflows
 
-dfRegisterCustomer = Dataflow(actorUnregisteredCustomer, procWebsiteCustomers, "Register as customer")
-dfLoginCustomer = Dataflow(actorUnregisteredCustomer, procWebsiteCustomers, "Login")
+Dataflow(actorUnregisteredCustomer, procWebsiteCustomers, "Register as customer")
+Dataflow(actorUnregisteredCustomer, procWebsiteCustomers, "Login")
 
-dfCustomerAccessRequestPriceList = Dataflow(actorCustomer, procWebsiteCustomers, "Request price list generation")
-dfCustomerAccessPriceListGenStatus = Dataflow(procWebsiteCustomers, actorCustomer, "Access generated price lists")
-dfCustomerAccessGenericFile = Dataflow(procWebsiteCustomers, actorCustomer, "Access generic files (Contracts, etc.)")
+Dataflow(actorCustomer, procWebsiteCustomers, "Request price list generation")
+Dataflow(procWebsiteCustomers, actorCustomer, "Access generated price lists")
+Dataflow(procWebsiteCustomers, actorCustomer, "Access generic files (Contracts, etc.)")
 
 Dataflow(storeCustomerFiles, procWebsiteCustomers, "Get customer generic file list")
 Dataflow(storeCustomerFiles, procWebsiteCustomers, "Get file contents for customer download")
