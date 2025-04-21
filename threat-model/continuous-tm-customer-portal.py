@@ -48,56 +48,67 @@ procPriceListGenerationService.inBoundary = tzPrivateNetwork
 
 # Dataflows
 
-Dataflow(actorUnregisteredCustomer, procWebsiteCustomers, "Register as customer")
+# - Customer Interactions
+Dataflow(actorUnregisteredCustomer,
+         procWebsiteCustomers, "Register as customer")
 Dataflow(actorUnregisteredCustomer, procWebsiteCustomers, "Login")
 
 Dataflow(actorCustomer, procWebsiteCustomers, "Request price list generation")
 Dataflow(procWebsiteCustomers, actorCustomer, "Access generated price lists")
-Dataflow(procWebsiteCustomers, actorCustomer, "Access generic files (Contracts, etc.)")
+Dataflow(procWebsiteCustomers, actorCustomer,
+         "Access generic files (Contracts, etc.)")
 
-Dataflow(storeCustomerFiles, procWebsiteCustomers, "Get customer generic file list")
-Dataflow(storeCustomerFiles, procWebsiteCustomers, "Get file contents for customer download")
+# - Customer File Storage
+Dataflow(storeCustomerFiles, procWebsiteCustomers,
+         "Get customer generic file list")
+Dataflow(storeCustomerFiles, procWebsiteCustomers,
+         "Get file contents for customer download")
 
-Dataflow(procWebsiteCustomers, storeTaskMessageQueue, "Create task for price list generation")
+Dataflow(procWebsiteSalesDepartment, storeCustomerFiles,
+         "Store generic customer file (Contracts, etc.)")
 
+Dataflow(procPriceListGenerationService, storeCustomerFiles,
+         "Store generated price list file")
 
+# - Price List Generation
+Dataflow(storeTaskMessageQueue, procWebsiteCustomers, "Get customer's tasks")
+Dataflow(storeTaskMessageQueue, procPriceListGenerationService,
+         "Get next price list generation task")
 
-Dataflow(procWebsiteCustomers, procAuthenticationService, "Authenticate customer")
-Dataflow(procWebsiteCustomers, procAuthenticationService, "Create new customer account")
+Dataflow(procWebsiteCustomers, storeTaskMessageQueue,
+         "Create task for price list generation")
+Dataflow(procPriceListGenerationService,
+         storeTaskMessageQueue, "Inform about task status")
 
-
+# - User Authentication
 Dataflow(procAuthenticationService, storeDatabase, "Create user account")
-
 Dataflow(procAuthenticationService, storeDatabase, "Get user accounts")
-
 Dataflow(procAuthenticationService, storeDatabase, "Update customer account")
 
+Dataflow(procWebsiteCustomers, procAuthenticationService,
+         "Authenticate customer")
+Dataflow(procWebsiteCustomers, procAuthenticationService,
+         "Create new customer account")
 
-Dataflow(actorUnregisteredInternalUser, procWebsiteSalesDepartment, "Register as admin or sales department user")
+
+Dataflow(procWebsiteSalesDepartment, procAuthenticationService,
+         "Register new internal account")
+Dataflow(procWebsiteSalesDepartment, procAuthenticationService,
+         "Authenticate internal user")
+Dataflow(procWebsiteSalesDepartment, procAuthenticationService,
+         "Approve / deactivate account (internal or customer)")
+
+# - Internal User Interaction
+Dataflow(actorUnregisteredInternalUser, procWebsiteSalesDepartment,
+         "Register as admin or sales department user")
 
 Dataflow(actorAdminOrSalesDepartment, procWebsiteSalesDepartment, "Login")
 
-Dataflow(actorAdminOrSalesDepartment, procWebsiteSalesDepartment, "Approve / deactivate account")
+Dataflow(actorAdminOrSalesDepartment, procWebsiteSalesDepartment,
+         "Approve / deactivate account")
 
-Dataflow(actorAdminOrSalesDepartment, procWebsiteSalesDepartment, "Upload customer generic file")
-
-Dataflow(procWebsiteSalesDepartment, procAuthenticationService, "Register new internal account")
-
-Dataflow(procWebsiteSalesDepartment, procAuthenticationService, "Authenticate internal user")
-
-Dataflow(procWebsiteSalesDepartment, procAuthenticationService, "Approve / deactivate account (internal or customer)")
-
-Dataflow(procWebsiteSalesDepartment, storeCustomerFiles, "Store generic customer file (Contracts, etc.)")
-
-
-
-Dataflow(storeTaskMessageQueue, procWebsiteCustomers, "Get customer's tasks")
-
-Dataflow(storeTaskMessageQueue, procPriceListGenerationService, "Get next price list generation task")
-
-Dataflow(procPriceListGenerationService, storeTaskMessageQueue, "Inform about task status")
-
-Dataflow(procPriceListGenerationService, storeCustomerFiles, "Store generated price list file")
+Dataflow(actorAdminOrSalesDepartment, procWebsiteSalesDepartment,
+         "Upload customer generic file")
 
 
 tm.process()
