@@ -20,8 +20,11 @@ storeTaskMessageQueue.inBoundary = tzPrivateNetwork
 
 # Actors
 
-actorSalesDepartment = Actor("Sales Department")
-actorSalesDepartment.inBoundary = tzPrivateNetwork
+actorAdminOrSalesDepartment = Actor("Admin / Sales Department")
+actorAdminOrSalesDepartment.inBoundary = tzPrivateNetwork
+
+actorUnregisteredInternalUser = Actor("Unregistered Internal User")
+actorUnregisteredInternalUser.inBoundary = tzPrivateNetwork
 
 actorCustomer = Actor("Customer")
 actorCustomer.inBoundary = tzInternet
@@ -46,63 +49,55 @@ procPriceListGenerationService.inBoundary = tzPrivateNetwork
 # Dataflows
 
 dfRegisterCustomer = Dataflow(actorUnregisteredCustomer, procWebsiteCustomers, "Register as customer")
-dfLoginCustomer = Dataflow(actorUnregisteredCustomer, procWebsiteCustomers, "Login customer")
+dfLoginCustomer = Dataflow(actorUnregisteredCustomer, procWebsiteCustomers, "Login")
 
 dfCustomerAccessRequestPriceList = Dataflow(actorCustomer, procWebsiteCustomers, "Request price list generation")
 dfCustomerAccessPriceListGenStatus = Dataflow(procWebsiteCustomers, actorCustomer, "Access generated price lists")
 dfCustomerAccessGenericFile = Dataflow(procWebsiteCustomers, actorCustomer, "Access generic files (Contracts, etc.)")
 
-dfGetCustomerFile = Dataflow(storeCustomerFiles, procWebsiteCustomers, "Get file for customer download")
+Dataflow(storeCustomerFiles, procWebsiteCustomers, "Get customer generic file list")
+Dataflow(storeCustomerFiles, procWebsiteCustomers, "Get file contents for customer download")
 
-dfRequestFileGeneration = Dataflow(procWebsiteCustomers, storeCustomerFiles, "Request price list generation")
-
-
-
-dfAuthenticateCustomer = Dataflow(procWebsiteCustomers, procAuthenticationService, "Authenticate customer")
-
-
-dfCreateCustomerAccountRequest = Dataflow(procAuthenticationService, storeDatabase, "Create customer account request")
-
-dfCreateCustomerAccount = Dataflow(procAuthenticationService, storeDatabase, "Create customer account")
-
-dfGetCustomerCredentials = Dataflow(procAuthenticationService, storeDatabase, "Get customer credentials")
-
-dfDeleteCustomer = Dataflow(procAuthenticationService, storeDatabase, "Delete customer account")
-
-dfSalesLogin = Dataflow(actorSalesDepartment, procWebsiteSalesDepartment, "Login")
-
-dfSalesApproveCustomer = Dataflow(actorSalesDepartment, procWebsiteSalesDepartment, "Approve customer account request")
-
-dfSalesDeleteCustomer = Dataflow(actorSalesDepartment, procWebsiteSalesDepartment, "Delete customer account")
-
-dfSalesUploadCustomerContract = Dataflow(actorSalesDepartment, procWebsiteSalesDepartment, "Upload customer contract file")
-
-dfSalesAuthenticate = Dataflow(procWebsiteSalesDepartment, procAuthenticationService, "Authenticate sales department")
-
-dfUserApproveCustomer = Dataflow(procWebsiteSalesDepartment, procAuthenticationService, "Approve customer account request")
-
-dfUserDeleteCustomer = Dataflow(procWebsiteSalesDepartment, procAuthenticationService, "Delete customer account")
-
-dfStoreCustomerContractFile = Dataflow(procWebsiteSalesDepartment, storeCustomerFiles, "Store customer contract file")
+Dataflow(procWebsiteCustomers, storeTaskMessageQueue, "Create task for price list generation")
 
 
 
-dfCustomerCheckTaskStatus = Dataflow(storeTaskMessageQueue, procWebsiteCustomers, "Inform about customer's task status")
-dfCustomerCheckTaskStatus.protocol = "TCP"
-dfCustomerCheckTaskStatus.dstPort = 1234
+Dataflow(procWebsiteCustomers, procAuthenticationService, "Authenticate customer")
+Dataflow(procWebsiteCustomers, procAuthenticationService, "Create new customer account")
 
 
-dfStartPriceListGenerationTask = Dataflow(storeTaskMessageQueue, procPriceListGenerationService, "Request new price list generation")
-dfStartPriceListGenerationTask.protocol = "TCP"
-dfStartPriceListGenerationTask.dstPort = 1234
+Dataflow(procAuthenticationService, storeDatabase, "Create user account")
 
-dfStatusPriceListGenerationTask = Dataflow(procPriceListGenerationService, storeTaskMessageQueue, "Inform about task status")
-dfStatusPriceListGenerationTask.protocol = "TCP"
-dfStatusPriceListGenerationTask.dstPort = 1234
+Dataflow(procAuthenticationService, storeDatabase, "Get user accounts")
 
-dfPriceListFileSave = Dataflow(procPriceListGenerationService, storeCustomerFiles, "Store generated price list file")
-dfPriceListFileSave.protocol = "S3"
-dfPriceListFileSave.dstPort = 443
+Dataflow(procAuthenticationService, storeDatabase, "Update customer account")
+
+
+Dataflow(actorUnregisteredInternalUser, procWebsiteSalesDepartment, "Register as admin or sales department user")
+
+Dataflow(actorAdminOrSalesDepartment, procWebsiteSalesDepartment, "Login")
+
+Dataflow(actorAdminOrSalesDepartment, procWebsiteSalesDepartment, "Approve / deactivate account")
+
+Dataflow(actorAdminOrSalesDepartment, procWebsiteSalesDepartment, "Upload customer generic file")
+
+Dataflow(procWebsiteSalesDepartment, procAuthenticationService, "Register new internal account")
+
+Dataflow(procWebsiteSalesDepartment, procAuthenticationService, "Authenticate internal user")
+
+Dataflow(procWebsiteSalesDepartment, procAuthenticationService, "Approve / deactivate account (internal or customer)")
+
+Dataflow(procWebsiteSalesDepartment, storeCustomerFiles, "Store generic customer file (Contracts, etc.)")
+
+
+
+Dataflow(storeTaskMessageQueue, procWebsiteCustomers, "Get customer's tasks")
+
+Dataflow(storeTaskMessageQueue, procPriceListGenerationService, "Get next price list generation task")
+
+Dataflow(procPriceListGenerationService, storeTaskMessageQueue, "Inform about task status")
+
+Dataflow(procPriceListGenerationService, storeCustomerFiles, "Store generated price list file")
 
 
 tm.process()
