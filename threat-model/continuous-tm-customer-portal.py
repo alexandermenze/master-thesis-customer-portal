@@ -9,6 +9,10 @@ tzDMZ = Boundary("DMZ")
 tzInternet = Boundary("Internet")
 tzPrivateNetwork = Boundary("Internal Network")
 
+# Stores
+storeLogs = Datastore("Log Database")
+storeLogs.inBoundary = tzPrivateNetwork
+
 storeCustomerFiles = Datastore("Customer File Storage")
 storeCustomerFiles.inBoundary = tzPrivateNetwork
 
@@ -19,7 +23,6 @@ storeTaskMessageQueue = Datastore("Task Message Queue")
 storeTaskMessageQueue.inBoundary = tzPrivateNetwork
 
 # Actors
-
 actorAdminOrSalesDepartment = Actor("Admin / Sales Department")
 actorAdminOrSalesDepartment.inBoundary = tzPrivateNetwork
 
@@ -33,7 +36,6 @@ actorUnregisteredCustomer = Actor("Unregistered Customer")
 actorUnregisteredCustomer.inBoundary = tzInternet
 
 # Processes
-
 procAuthenticationService = Process("User Authentication Service")
 procAuthenticationService.inBoundary = tzPrivateNetwork
 
@@ -47,6 +49,21 @@ procPriceListGenerationService = Process("PriceList Generation Service")
 procPriceListGenerationService.inBoundary = tzPrivateNetwork
 
 # Dataflows
+
+# - Logging
+Dataflow(procWebsiteSalesDepartment, storeLogs, "Log file upload")
+Dataflow(procWebsiteSalesDepartment, storeLogs, "Log errors")
+
+Dataflow(procAuthenticationService, storeLogs, "Log user auth events")
+Dataflow(procAuthenticationService, storeLogs, "Log approval and deactivation")
+
+Dataflow(procPriceListGenerationService, storeLogs,
+         "Log price list generation performance")
+
+Dataflow(procWebsiteCustomers, storeLogs,
+         "Log price list generation triggered")
+Dataflow(procWebsiteCustomers, storeLogs,
+         "Log customer file download with user id")
 
 # - Customer Interactions
 Dataflow(actorUnregisteredCustomer,
