@@ -3,52 +3,60 @@ using CustomerPortal.InternalWebsite.Configurations;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Minio;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace CustomerPortal.InternalWebsite;
 
-builder.Services.AddHttpClient(
-    "UserAuthService",
-    o =>
-        o.BaseAddress = new Uri(
-            builder.Configuration.GetValueOrThrow<string>("UserAuthService:BaseUrl")
-        )
-);
-
-builder
-    .Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.Cookie.Name = "Cookies";
-        options.LoginPath = "/Login";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-    });
-
-builder.Services.AddMinio(o =>
+public static class Program
 {
-    o.WithEndpoint(builder.Configuration.GetValueOrThrow<string>("MinIO:Endpoint"))
-        .WithCredentials(
-            builder.Configuration.GetValueOrThrow<string>("MinIO:AccessKey"),
-            builder.Configuration.GetValueOrThrow<string>("MinIO:SecretKey")
-        )
-        .WithSSL(false);
-});
+    public static async Task Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton(
-    new MinioAppConfig(
-        builder.Configuration.GetValueOrThrow<string>("MinIO:BucketName"),
-        builder.Configuration.GetValueOrThrow<string>("MinIO:GenericFilesPath")
-    )
-);
+        builder.Services.AddHttpClient(
+            "UserAuthService",
+            o =>
+                o.BaseAddress = new Uri(
+                    builder.Configuration.GetValueOrThrow<string>("UserAuthService:BaseUrl")
+                )
+        );
 
-builder.Services.AddRazorPages();
+        builder
+            .Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
+            {
+                options.Cookie.Name = "Cookies";
+                options.LoginPath = "/Login";
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+            });
 
-var app = builder.Build();
+        builder.Services.AddMinio(o =>
+        {
+            o.WithEndpoint(builder.Configuration.GetValueOrThrow<string>("MinIO:Endpoint"))
+                .WithCredentials(
+                    builder.Configuration.GetValueOrThrow<string>("MinIO:AccessKey"),
+                    builder.Configuration.GetValueOrThrow<string>("MinIO:SecretKey")
+                )
+                .WithSSL(false);
+        });
 
-app.UseRouting();
+        builder.Services.AddSingleton(
+            new MinioAppConfig(
+                builder.Configuration.GetValueOrThrow<string>("MinIO:BucketName"),
+                builder.Configuration.GetValueOrThrow<string>("MinIO:GenericFilesPath")
+            )
+        );
 
-app.UseAuthentication();
-app.UseAuthorization();
+        builder.Services.AddRazorPages();
 
-app.MapStaticAssets();
-app.MapRazorPages().WithStaticAssets();
+        var app = builder.Build();
 
-app.Run();
+        app.UseRouting();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.MapStaticAssets();
+        app.MapRazorPages().WithStaticAssets();
+
+        await app.RunAsync();
+    }
+}

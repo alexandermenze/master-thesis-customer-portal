@@ -1,44 +1,51 @@
 ﻿using CustomerPortal.Extensions;
-using CustomerPortal.PriceListGenerationService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Minio;
 using StackExchange.Redis;
 
-var config = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json")
-    .AddEnvironmentVariables()
-    .Build();
+namespace CustomerPortal.PriceListGenerationService;
 
-var services = new ServiceCollection();
+public static class Program
+{
+    public static async Task Main()
+    {
+        var config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddEnvironmentVariables()
+            .Build();
 
-services.AddLogging(o => o.AddConsole());
-services.AddSingleton<IConnectionMultiplexer>(
-    await ConnectionMultiplexer.ConnectAsync(
-        config.GetValueOrThrow<string>("Redis:ConnectionString")
-    )
-);
+        var services = new ServiceCollection();
 
-services.AddMinio(o =>
-    o.WithEndpoint(config.GetValueOrThrow<string>("MinIO:Endpoint"))
-        .WithCredentials(
-            config.GetValueOrThrow<string>("MinIO:AccessKey"),
-            config.GetValueOrThrow<string>("MinIO:SecretKey")
-        )
-);
+        services.AddLogging(o => o.AddConsole());
+        services.AddSingleton<IConnectionMultiplexer>(
+            await ConnectionMultiplexer.ConnectAsync(
+                config.GetValueOrThrow<string>("Redis:ConnectionString")
+            )
+        );
 
-services.AddSingleton(
-    new RedisConfig(
-        config.GetValueOrThrow<string>("Redis:TasksStreamName"),
-        config.GetValueOrThrow<string>("Redis:ConsumerGroupName")
-    )
-);
+        services.AddMinio(o =>
+            o.WithEndpoint(config.GetValueOrThrow<string>("MinIO:Endpoint"))
+                .WithCredentials(
+                    config.GetValueOrThrow<string>("MinIO:AccessKey"),
+                    config.GetValueOrThrow<string>("MinIO:SecretKey")
+                )
+        );
 
-services.AddSingleton(new MinioAppConfig(config.GetValueOrThrow<string>("MinIO:Bucket")));
+        services.AddSingleton(
+            new RedisConfig(
+                config.GetValueOrThrow<string>("Redis:TasksStreamName"),
+                config.GetValueOrThrow<string>("Redis:ConsumerGroupName")
+            )
+        );
 
-services.AddTransient<App>();
+        services.AddSingleton(new MinioAppConfig(config.GetValueOrThrow<string>("MinIO:Bucket")));
 
-var serviceProvider = services.BuildServiceProvider();
+        services.AddTransient<App>();
 
-await serviceProvider.GetRequiredService<App>().Run(CancellationToken.None);
+        var serviceProvider = services.BuildServiceProvider();
+
+        await serviceProvider.GetRequiredService<App>().Run(CancellationToken.None);
+    }
+}
