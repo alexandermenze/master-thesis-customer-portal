@@ -3,6 +3,7 @@ using CustomerPortal.InternalWebsite.Models;
 using Microsoft.AspNetCore.Mvc;
 using Minio;
 using Minio.DataModel.Args;
+using ThreatModel.Attributes;
 
 namespace CustomerPortal.InternalWebsite.Pages;
 
@@ -23,6 +24,8 @@ public class UploadCustomerFile(
 
     public void OnGet() { }
 
+    [InboundFrameworkCallPoint("InternalWebsite")]
+    [OutboundDataPushCallPoint("upload-customer-file", "Minio.*")]
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)

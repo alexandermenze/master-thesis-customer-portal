@@ -2,11 +2,13 @@ using CustomerPortal.Extensions;
 using CustomerPortal.InternalWebsite.Configurations;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Minio;
+using ThreatModel.Attributes;
 
 namespace CustomerPortal.InternalWebsite;
 
 public static class Program
 {
+    [InboundProgramCallPoint("InternalWebsite")]
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);

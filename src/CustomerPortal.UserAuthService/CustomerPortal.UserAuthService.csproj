@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CustomerPortal.UserAuthService.Postgres\CustomerPortal.UserAuthService.Postgres.csproj" />
+    <ProjectReference Include="..\ThreatModel\ThreatModel.csproj" />
   </ItemGroup>
 
 </Project>

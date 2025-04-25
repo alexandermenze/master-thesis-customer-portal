@@ -27,6 +27,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomerPortal.Messages", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomerPortal.InternalWebsite", "CustomerPortal.InternalWebsite\CustomerPortal.InternalWebsite.csproj", "{966BCBB3-D222-4C63-B506-933A0C30BF91}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThreatModel", "ThreatModel\ThreatModel.csproj", "{D042E569-6CED-4328-AF00-273F591841E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThreatModel", "ThreatModel", "{A555F0AA-9896-4C21-87E5-06B877D1A7B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -133,6 +137,18 @@ Global
 		{966BCBB3-D222-4C63-B506-933A0C30BF91}.Release|x64.Build.0 = Release|Any CPU
 		{966BCBB3-D222-4C63-B506-933A0C30BF91}.Release|x86.ActiveCfg = Release|Any CPU
 		{966BCBB3-D222-4C63-B506-933A0C30BF91}.Release|x86.Build.0 = Release|Any CPU
+		{D042E569-6CED-4328-AF00-273F591841E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D042E569-6CED-4328-AF00-273F591841E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D042E569-6CED-4328-AF00-273F591841E8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D042E569-6CED-4328-AF00-273F591841E8}.Debug|x64.Build.0 = Debug|Any CPU
+		{D042E569-6CED-4328-AF00-273F591841E8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D042E569-6CED-4328-AF00-273F591841E8}.Debug|x86.Build.0 = Debug|Any CPU
+		{D042E569-6CED-4328-AF00-273F591841E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D042E569-6CED-4328-AF00-273F591841E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D042E569-6CED-4328-AF00-273F591841E8}.Release|x64.ActiveCfg = Release|Any CPU
+		{D042E569-6CED-4328-AF00-273F591841E8}.Release|x64.Build.0 = Release|Any CPU
+		{D042E569-6CED-4328-AF00-273F591841E8}.Release|x86.ActiveCfg = Release|Any CPU
+		{D042E569-6CED-4328-AF00-273F591841E8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -146,5 +162,6 @@ Global
 		{477733D4-2EB3-4A5F-BF35-26DB0CFA8D65} = {EA46C166-48C2-4D2F-9B42-FE19C413FAF7}
 		{96FF0CE3-FB8B-44A1-81FC-AD6D790CBF51} = {EA46C166-48C2-4D2F-9B42-FE19C413FAF7}
 		{966BCBB3-D222-4C63-B506-933A0C30BF91} = {19F12CBC-F5AB-4A09-A253-75D3EB125992}
+		{D042E569-6CED-4328-AF00-273F591841E8} = {A555F0AA-9896-4C21-87E5-06B877D1A7B6}
 	EndGlobalSection
 EndGlobal

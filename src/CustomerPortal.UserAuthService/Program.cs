@@ -11,11 +11,13 @@ using CustomerPortal.UserAuthService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Scalar.AspNetCore;
+using ThreatModel.Attributes;
 
 namespace CustomerPortal.UserAuthService;
 
 public static class Program
 {
+    [InboundProgramCallPoint("UserAuthService")]
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);

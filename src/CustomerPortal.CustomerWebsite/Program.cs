@@ -3,11 +3,13 @@ using CustomerPortal.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Minio;
 using StackExchange.Redis;
+using ThreatModel.Attributes;
 
 namespace CustomerPortal.CustomerWebsite;
 
 public static class Program
 {
+    [InboundProgramCallPoint("CustomerWebsite")]
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);

@@ -4,11 +4,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Minio;
 using StackExchange.Redis;
+using ThreatModel.Attributes;
 
 namespace CustomerPortal.PriceListGenerationService;
 
 public static class Program
 {
+    [InboundProgramCallPoint("PriceListGenerationService")]
     public static async Task Main()
     {
         var config = new ConfigurationBuilder()
