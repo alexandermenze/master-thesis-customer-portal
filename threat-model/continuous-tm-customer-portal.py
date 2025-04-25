@@ -38,20 +38,45 @@ actorUnregisteredCustomer.inBoundary = tzInternet
 # Processes
 procAuthenticationService = Process("User Authentication Service")
 procAuthenticationService.inBoundary = tzPrivateNetwork
+procAuthenticationService.inboundCallPoints = [
+    "CustomerPortal.UserAuthService.*"]
 
 procWebsiteSalesDepartment = Process("Website for Sales Department")
 procWebsiteSalesDepartment.inBoundary = tzPrivateNetwork
+procWebsiteSalesDepartment.inboundCallPoints = [
+    "CustomerPortal.InternalWebsite.*"]
 
 procWebsiteCustomers = Process("Website for Customers")
 procWebsiteCustomers.inBoundary = tzDMZ
+procWebsiteCustomers.inboundCallPoints = [
+    "CustomerPortal.CustomerWebsite.*"]
 
 procPriceListGenerationService = Process("PriceList Generation Service")
 procPriceListGenerationService.inBoundary = tzPrivateNetwork
+procPriceListGenerationService.inboundCallPoints = [
+    "CustomerPortal.PriceListGenerationService.*"]
 
 # Dataflows
 
 # - Logging
-Dataflow(procWebsiteSalesDepartment, storeLogs, "Log file upload")
+
+# Case 1.
+# System process calls external process (or store)
+# Marked by
+#  - ...
+# Is
+#  - Outbound-Data-Push-Call-Point
+# Maps to
+#  - Dataflow-Exit-Point
+internalWebsiteLogFileUpload = Dataflow(
+    procWebsiteSalesDepartment, storeLogs, "Log file upload")
+internalWebsiteLogFileUpload.codeLocation = "CustomerPortal.InternalWebsite.Pages.UploadCustomerFile.OnPostAsync"
+internalWebsiteLogFileUpload.callPoints = {
+    "outbound": [
+        "Microsoft.Extensions.Logging.LoggerExtensions.*"
+    ]
+}
+
 Dataflow(procWebsiteSalesDepartment, storeLogs, "Log errors")
 
 Dataflow(procAuthenticationService, storeLogs, "Log user auth events")
@@ -108,8 +133,16 @@ Dataflow(procWebsiteCustomers, procAuthenticationService,
          "Create new customer account")
 
 
-Dataflow(procWebsiteSalesDepartment, procAuthenticationService,
-         "Register new internal account")
+registerInternalAccount = Dataflow(procWebsiteSalesDepartment, procAuthenticationService,
+                                   "Register new internal account")
+registerInternalAccount.outboundCallPoints = [
+    {
+        "dataSource": "CustomerPortal.InternalWebsite.Pages.RegisterModel.OnPostAsync",
+        "dataSink": "System.Net.Http.Json.HttpClientJsonExtensions.PostAsJsonAsync<InputModel>"
+    }
+]
+
+
 Dataflow(procWebsiteSalesDepartment, procAuthenticationService,
          "Authenticate internal user")
 Dataflow(procWebsiteSalesDepartment, procAuthenticationService,
@@ -124,8 +157,21 @@ Dataflow(actorAdminOrSalesDepartment, procWebsiteSalesDepartment, "Login")
 Dataflow(actorAdminOrSalesDepartment, procWebsiteSalesDepartment,
          "Approve / deactivate account")
 
-Dataflow(actorAdminOrSalesDepartment, procWebsiteSalesDepartment,
-         "Upload customer generic file")
+uploadCustomerFile = Dataflow(actorAdminOrSalesDepartment, procWebsiteSalesDepartment,
+                              "Upload customer generic file")
+# Case 4.
+# Outside process or entity calls into system
+# Marked by
+#  - No Outbound-Call-Points
+# Is
+#  - Inbound-Framework-Call-Point
+# Maps to
+#  - Dataflow-Entry-Point
+uploadCustomerFile.callPoints = {
+    "inbound": [
+        "CustomerPortal.InternalWebsite.Pages.UploadCustomerFile.OnPostAsync"
+    ]
+}
 
 
 tm.process()
