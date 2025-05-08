@@ -8,7 +8,7 @@ namespace CustomerPortal.InternalWebsite;
 
 public static class Program
 {
-    [InboundProgramCallPoint("InternalWebsite")]
+    [ThreatModelProcess("InternalWebsite")]
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);

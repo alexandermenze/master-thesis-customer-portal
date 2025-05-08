@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Minio;
 using Minio.DataModel.Args;
 using ThreatModel.Attributes;
+using ThreatModel.Tags;
 
 namespace CustomerPortal.InternalWebsite.Pages;
 
@@ -24,8 +25,7 @@ public class UploadCustomerFile(
 
     public void OnGet() { }
 
-    [InboundFrameworkCallPoint("InternalWebsite")]
-    [OutboundDataPushCallPoint("upload-customer-file", "Minio.*")]
+    [ThreatModelProcess("InternalWebsite")]
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
@@ -47,14 +47,17 @@ public class UploadCustomerFile(
 
         await using var stream = Upload.OpenReadStream();
 
-        var putArgs = new PutObjectArgs()
-            .WithBucket(minioConfig.BucketName)
-            .WithObject(filePath)
-            .WithStreamData(stream)
-            .WithObjectSize(Upload.Length)
-            .WithContentType(Upload.ContentType);
+        await "UploadToMinio".Sink(async () =>
+        {
+            var putArgs = new PutObjectArgs()
+                .WithBucket(minioConfig.BucketName)
+                .WithObject(filePath)
+                .WithStreamData(stream)
+                .WithObjectSize(Upload.Length)
+                .WithContentType(Upload.ContentType);
 
-        await minio.PutObjectAsync(putArgs);
+            await minio.PutObjectAsync(putArgs);
+        });
 
         logger.LogInformation(
             "File {FilePath} was uploaded by {UserId} for customer {CustomerNo}",

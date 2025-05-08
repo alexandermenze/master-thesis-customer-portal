@@ -17,7 +17,7 @@ namespace CustomerPortal.UserAuthService;
 
 public static class Program
 {
-    [InboundProgramCallPoint("UserAuthService")]
+    [ThreatModelProcess("UserAuthService")]
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);

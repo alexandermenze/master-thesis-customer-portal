@@ -4,6 +4,7 @@ using CustomerPortal.CustomerWebsite.Models;
 using CustomerPortal.Messages.Commands;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
+using ThreatModel.Tags;
 
 namespace CustomerPortal.CustomerWebsite.Pages;
 
@@ -51,7 +52,7 @@ public class GeneratePriceList(
             new("Body", JsonSerializer.Serialize(command)),
         };
 
-        db.StreamAdd(redisConfig.TasksStreamName, fields);
+        await "tasks-stream-add".Sink(() => db.StreamAddAsync(redisConfig.TasksStreamName, fields));
 
         logger.LogInformation(
             "Price list generation triggered for customer {CustomerNo} by user {UserId}",
