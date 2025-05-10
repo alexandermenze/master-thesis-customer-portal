@@ -9,6 +9,7 @@ using CustomerPortal.UserAuthService.Domain.Repositories;
 using CustomerPortal.UserAuthService.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ThreatModel.Attributes;
 
 namespace CustomerPortal.UserAuthService.Controllers;
 

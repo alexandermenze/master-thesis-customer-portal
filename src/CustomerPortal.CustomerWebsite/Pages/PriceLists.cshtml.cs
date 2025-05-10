@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Minio;
 using Minio.DataModel.Args;
 using StackExchange.Redis;
+using ThreatModel.Attributes;
 
 namespace CustomerPortal.CustomerWebsite.Pages;
 
@@ -30,6 +31,7 @@ public class PriceLists(
     public ImmutableArray<TaskViewModel> TaskViewModels { get; set; } =
         ImmutableArray<TaskViewModel>.Empty;
 
+    [ThreatModelProcess("customer-website-core")]
     public async Task<IActionResult> OnGet()
     {
         var currentUser = await GetCurrentUser();
@@ -71,6 +73,7 @@ public class PriceLists(
         return Page();
     }
 
+    [ThreatModelProcess("customer-website-core")]
     public async Task<IActionResult> OnPostDownload(Guid id)
     {
         var currentUser = await GetCurrentUser();

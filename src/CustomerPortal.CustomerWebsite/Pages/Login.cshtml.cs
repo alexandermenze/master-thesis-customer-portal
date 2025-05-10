@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using ThreatModel.Attributes;
+using ThreatModel.Tags;
 
 namespace CustomerPortal.CustomerWebsite.Pages;
 
@@ -25,12 +27,12 @@ public class Login(IHttpClientFactory httpClientFactory) : PageModel
         public string? Password { get; set; }
     }
 
+    [ThreatModelProcess("customer-website-auth")]
+    [InboundFlow("login-customer")]
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
-        {
             return Page();
-        }
 
         var response = await _httpClient.PostAsJsonAsync("users/login", Input);
 

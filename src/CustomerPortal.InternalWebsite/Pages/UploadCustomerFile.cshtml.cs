@@ -47,17 +47,20 @@ public class UploadCustomerFile(
 
         await using var stream = Upload.OpenReadStream();
 
-        await "UploadToMinio".Sink(async () =>
-        {
-            var putArgs = new PutObjectArgs()
-                .WithBucket(minioConfig.BucketName)
-                .WithObject(filePath)
-                .WithStreamData(stream)
-                .WithObjectSize(Upload.Length)
-                .WithContentType(Upload.ContentType);
+        await Push(
+            "upload-to-minio",
+            async () =>
+            {
+                var putArgs = new PutObjectArgs()
+                    .WithBucket(minioConfig.BucketName)
+                    .WithObject(filePath)
+                    .WithStreamData(stream)
+                    .WithObjectSize(Upload.Length)
+                    .WithContentType(Upload.ContentType);
 
-            await minio.PutObjectAsync(putArgs);
-        });
+                await minio.PutObjectAsync(putArgs);
+            }
+        );
 
         logger.LogInformation(
             "File {FilePath} was uploaded by {UserId} for customer {CustomerNo}",

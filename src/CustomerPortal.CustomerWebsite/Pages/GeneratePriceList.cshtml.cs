@@ -4,6 +4,7 @@ using CustomerPortal.CustomerWebsite.Models;
 using CustomerPortal.Messages.Commands;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
+using ThreatModel.Attributes;
 using ThreatModel.Tags;
 
 namespace CustomerPortal.CustomerWebsite.Pages;
@@ -26,6 +27,7 @@ public class GeneratePriceList(
         PriceDate = DateOnly.FromDateTime(DateTime.Today);
     }
 
+    [ThreatModelProcess("customer-website-core")]
     public async Task<IActionResult> OnPost()
     {
         if (!ModelState.IsValid)
@@ -52,7 +54,10 @@ public class GeneratePriceList(
             new("Body", JsonSerializer.Serialize(command)),
         };
 
-        await "tasks-stream-add".Sink(() => db.StreamAddAsync(redisConfig.TasksStreamName, fields));
+        await Push(
+            "tasks-stream-add",
+            () => db.StreamAddAsync(redisConfig.TasksStreamName, fields)
+        );
 
         logger.LogInformation(
             "Price list generation triggered for customer {CustomerNo} by user {UserId}",

@@ -4,6 +4,7 @@ using CustomerPortal.CustomerWebsite.Models;
 using Microsoft.AspNetCore.Mvc;
 using Minio;
 using Minio.DataModel.Args;
+using ThreatModel.Attributes;
 
 namespace CustomerPortal.CustomerWebsite.Pages;
 
@@ -16,6 +17,7 @@ public class GenericFiles(
 {
     public ImmutableArray<string> Files = [];
 
+    [ThreatModelProcess("customer-website-core")]
     public async Task<IActionResult> OnGet()
     {
         var currentUser = await GetCurrentUser();
@@ -43,6 +45,7 @@ public class GenericFiles(
         return Page();
     }
 
+    [ThreatModelProcess("customer-website-core")]
     public async Task<IActionResult> OnPostDownloadAsync(string fileName)
     {
         // TODO: Sanitize input
