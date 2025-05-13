@@ -1996,56 +1996,6 @@
             "connector": "smooth",
             "data": {
               "type": "tm.Flow",
-              "name": "register-as-internal-user",
-              "description": "",
-              "outOfScope": false,
-              "reasonOutOfScope": "",
-              "hasOpenThreats": false,
-              "isBidirectional": false,
-              "isEncrypted": false,
-              "isPublicNetwork": false,
-              "protocol": "",
-              "threats": []
-            },
-            "labels": [
-              "register-as-internal-user"
-            ],
-            "id": "495f9414-9a11-4c8f-86aa-b766afd14d83",
-            "source": {
-              "cell": "86f05065-288e-4d1f-9600-0b00c377da0b",
-              "port": "f7d8c2f4-7c1e-4c04-bbd0-a6949df893f1"
-            },
-            "target": {
-              "cell": "30acbdb4-fa80-4b1d-8d92-04d483a64795",
-              "port": "60f474c3-2402-474a-8a38-d6cfd1e8b486"
-            },
-            "vertices": [
-              {
-                "x": -160,
-                "y": 330
-              }
-            ]
-          },
-          {
-            "shape": "flow",
-            "attrs": {
-              "line": {
-                "stroke": "#333333",
-                "targetMarker": {
-                  "name": "block"
-                },
-                "sourceMarker": {
-                  "name": ""
-                },
-                "strokeDasharray": null
-              }
-            },
-            "width": 200,
-            "height": 100,
-            "zIndex": 10,
-            "connector": "smooth",
-            "data": {
-              "type": "tm.Flow",
               "name": "manage-user-accounts",
               "description": "",
               "outOfScope": false,
@@ -2477,6 +2427,56 @@
               {
                 "x": 250,
                 "y": 960
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "register-as-internal-user",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": []
+            },
+            "labels": [
+              "register-as-internal-user"
+            ],
+            "id": "495f9414-9a11-4c8f-86aa-b766afd14d83",
+            "source": {
+              "cell": "86f05065-288e-4d1f-9600-0b00c377da0b",
+              "port": "f7d8c2f4-7c1e-4c04-bbd0-a6949df893f1"
+            },
+            "target": {
+              "cell": "30acbdb4-fa80-4b1d-8d92-04d483a64795",
+              "port": "60f474c3-2402-474a-8a38-d6cfd1e8b486"
+            },
+            "vertices": [
+              {
+                "x": -160,
+                "y": 330
               }
             ]
           },
