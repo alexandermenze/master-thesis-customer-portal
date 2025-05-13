@@ -17,10 +17,7 @@ public class UserPageModel(ILogger logger, IHttpClientFactory httpClientFactory)
 
         var currentUser = await GetCurrentUser(token);
 
-        if (currentUser?.CustomerNo is null)
-            return null;
-
-        return await GetCurrentUser(token);
+        return currentUser?.CustomerNo is null ? null : currentUser;
     }
 
     private async Task<UserResponseDto?> GetCurrentUser(string token)
