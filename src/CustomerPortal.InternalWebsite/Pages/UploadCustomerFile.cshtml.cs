@@ -25,7 +25,7 @@ public class UploadCustomerFile(
 
     public void OnGet() { }
 
-    [ThreatModelProcess("InternalWebsite")]
+    [ThreatModelProcess("sales-dept-website")]
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
