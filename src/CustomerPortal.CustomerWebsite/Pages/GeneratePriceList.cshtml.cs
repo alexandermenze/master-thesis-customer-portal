@@ -5,7 +5,6 @@ using CustomerPortal.Messages.Commands;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
 using ThreatModel.Attributes;
-using ThreatModel.Tags;
 
 namespace CustomerPortal.CustomerWebsite.Pages;
 
