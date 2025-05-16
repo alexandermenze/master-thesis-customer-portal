@@ -33,6 +33,6 @@ public static class ServiceCollectionExtensions
     {
         var scope = serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<UserAuthContext>();
-        await context.Database.MigrateAsync();
+        await Push("setup-database", () => context.Database.MigrateAsync());
     }
 }

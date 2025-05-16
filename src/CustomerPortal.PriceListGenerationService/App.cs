@@ -81,29 +81,46 @@ public class App(
 
     private async Task SetupConsumer()
     {
-        var streamExists = await redis.GetDatabase().KeyExistsAsync(redisConfig.TasksStreamName);
+        var createdConsumer = await Push(
+            "setup-consumer",
+            async () =>
+            {
+                var streamExists = await redis
+                    .GetDatabase()
+                    .KeyExistsAsync(redisConfig.TasksStreamName);
 
-        var consumerExists =
-            streamExists
-            && (await redis.GetDatabase().StreamGroupInfoAsync(redisConfig.TasksStreamName)).Any(
-                g => g.Name.Equals(redisConfig.ConsumerGroupName)
-            );
+                var consumerExists =
+                    streamExists
+                    && (
+                        await redis.GetDatabase().StreamGroupInfoAsync(redisConfig.TasksStreamName)
+                    ).Any(g => g.Name.Equals(redisConfig.ConsumerGroupName));
 
-        if (consumerExists)
+                if (consumerExists)
+                    return false;
+
+                await redis
+                    .GetDatabase()
+                    .StreamCreateConsumerGroupAsync(
+                        redisConfig.TasksStreamName,
+                        redisConfig.ConsumerGroupName,
+                        "0-0"
+                    );
+
+                return true;
+            }
+        );
+
+        if (createdConsumer is false)
             return;
 
-        await redis
-            .GetDatabase()
-            .StreamCreateConsumerGroupAsync(
-                redisConfig.TasksStreamName,
-                redisConfig.ConsumerGroupName,
-                "0-0"
-            );
-
-        logger.LogInformation(
-            "Created consumer group {GroupName} for task stream {StreamName}",
-            redisConfig.ConsumerGroupName,
-            redisConfig.TasksStreamName
+        Push(
+            "log-startup",
+            () =>
+                logger.LogInformation(
+                    "Created consumer group {GroupName} for task stream {StreamName}",
+                    redisConfig.ConsumerGroupName,
+                    redisConfig.TasksStreamName
+                )
         );
     }
 

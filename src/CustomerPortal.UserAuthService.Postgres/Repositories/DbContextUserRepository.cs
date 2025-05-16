@@ -4,7 +4,6 @@ using CustomerPortal.UserAuthService.Domain.DataClasses;
 using CustomerPortal.UserAuthService.Domain.Factories;
 using CustomerPortal.UserAuthService.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
-using ThreatModel.Attributes;
 
 namespace CustomerPortal.UserAuthService.Postgres.Repositories;
 

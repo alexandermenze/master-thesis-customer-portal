@@ -35,13 +35,16 @@ public class TokenAuthenticationHandler(
 
         if (split.Length != 2)
         {
-            logger.LogDebug("Bearer token format is invalid.");
+            Push("log-user-auth-events", () => logger.LogDebug("Bearer token format is invalid."));
             return AuthenticateResult.NoResult();
         }
 
         if (Guid.TryParse(split[0], out var userId) is false)
         {
-            logger.LogDebug("User id in token is not a valid guid.");
+            Push(
+                "log-user-auth-events",
+                () => logger.LogDebug("User id in token is not a valid guid.")
+            );
             return AuthenticateResult.NoResult();
         }
 
@@ -51,9 +54,13 @@ public class TokenAuthenticationHandler(
 
         if (user is null)
         {
-            logger.LogInformation(
-                "User for user with id {UserId} from token was not found.",
-                userId
+            Push(
+                "log-user-auth-events",
+                () =>
+                    logger.LogInformation(
+                        "User for user with id {UserId} from token was not found.",
+                        userId
+                    )
             );
             return AuthenticateResult.Fail("Invalid token");
         }
@@ -61,10 +68,14 @@ public class TokenAuthenticationHandler(
         if (user.IsSessionValidAt(token, DateTimeOffset.UtcNow) is false)
             return AuthenticateResult.Fail("Invalid token");
 
-        logger.LogDebug(
-            "User {UserId} authenticated from {IpAddress}.",
-            user.Id,
-            Context.Connection.RemoteIpAddress?.ToString()
+        Push(
+            "log-user-auth-events",
+            () =>
+                logger.LogDebug(
+                    "User {UserId} authenticated from {IpAddress}.",
+                    user.Id,
+                    Context.Connection.RemoteIpAddress?.ToString()
+                )
         );
 
         return AuthenticateResult.Success(

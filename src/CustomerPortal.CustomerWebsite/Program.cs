@@ -9,7 +9,7 @@ namespace CustomerPortal.CustomerWebsite;
 
 public static class Program
 {
-    [ThreatModelProcess("CustomerWebsite")]
+    [ThreatModelProcess("customer-website-core")]
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);

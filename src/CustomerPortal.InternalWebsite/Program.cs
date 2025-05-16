@@ -8,7 +8,7 @@ namespace CustomerPortal.InternalWebsite;
 
 public static class Program
 {
-    [ThreatModelProcess("InternalWebsite")]
+    [ThreatModelProcess("sales-dept-website")]
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);

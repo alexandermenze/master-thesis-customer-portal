@@ -27,7 +27,7 @@ public class RegisterModel(IHttpClientFactory httpClientFactory) : PageModel
             return Page();
 
         var response = await Push(
-            "register-as-customer",
+            "register-customer",
             () => _httpClient.PostAsJsonAsync("users/register-customer", Input)
         );
 
