@@ -25,7 +25,10 @@ public class RegisterModel(IHttpClientFactory httpClientFactory) : PageModel
         if (!ModelState.IsValid)
             return Page();
 
-        var response = await _httpClient.PostAsJsonAsync("users/register", Input);
+        var response = await Push(
+            "register-internal-user",
+            () => _httpClient.PostAsJsonAsync("users/register", Input)
+        );
 
         if (response.IsSuccessStatusCode)
         {

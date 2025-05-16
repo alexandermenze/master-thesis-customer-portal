@@ -74,9 +74,14 @@ public class UnapprovedUsers(ILogger<UnapprovedUsers> logger, IHttpClientFactory
             "Bearer",
             bearerToken
         );
-        var response = await _httpClient.PostAsJsonAsync(
-            $"/users/{id}/approve",
-            new { CustomerNo = ApproveCustomerNo }
+
+        var response = await Push(
+            "approve-user",
+            () =>
+                _httpClient.PostAsJsonAsync(
+                    $"/users/{id}/approve",
+                    new { CustomerNo = ApproveCustomerNo }
+                )
         );
 
         if (response.IsSuccessStatusCode)
