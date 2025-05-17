@@ -55,6 +55,7 @@ public class Users(ILogger<Users> logger, IHttpClientFactory httpClientFactory)
         return await OnGet();
     }
 
+    [ThreatModelProcess("sales-dept-website")]
     public async Task<IActionResult> OnPostApproveAsync(Guid id)
     {
         await OnGet();
