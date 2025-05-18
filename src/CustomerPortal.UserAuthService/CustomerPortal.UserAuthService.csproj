@@ -14,11 +14,11 @@
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.1.7" />
+    <PackageReference Include="TMReflexionModeler.Taint" Version="0.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CustomerPortal.UserAuthService.Postgres\CustomerPortal.UserAuthService.Postgres.csproj" />
-    <ProjectReference Include="..\ThreatModel\ThreatModel.csproj" />
   </ItemGroup>
 
 </Project>

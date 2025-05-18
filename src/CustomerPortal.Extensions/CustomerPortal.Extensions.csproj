@@ -8,10 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.4" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\ThreatModel\ThreatModel.csproj"/>
+    <PackageReference Include="TMReflexionModeler.Taint" Version="0.0.1" />
   </ItemGroup>
 
 </Project>

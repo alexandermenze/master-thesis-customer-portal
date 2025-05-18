@@ -2,7 +2,6 @@ using CustomerPortal.Extensions;
 using CustomerPortal.InternalWebsite.Configurations;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Minio;
-using ThreatModel.Attributes;
 
 namespace CustomerPortal.InternalWebsite;
 

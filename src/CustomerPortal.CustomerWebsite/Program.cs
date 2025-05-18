@@ -3,7 +3,6 @@ using CustomerPortal.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Minio;
 using StackExchange.Redis;
-using ThreatModel.Attributes;
 
 namespace CustomerPortal.CustomerWebsite;
 

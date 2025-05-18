@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    <PackageReference Include="TMReflexionModeler.Taint" Version="0.0.1" />
   </ItemGroup>
   
   <ItemGroup>

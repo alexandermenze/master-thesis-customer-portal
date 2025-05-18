@@ -9,14 +9,13 @@
   <ItemGroup>
     <ProjectReference Include="..\CustomerPortal.Extensions\CustomerPortal.Extensions.csproj" />
     <ProjectReference Include="..\CustomerPortal.Messages\CustomerPortal.Messages.csproj" />
-    <ProjectReference Include="..\CustomerPortal.ThreatModel\CustomerPortal.ThreatModel.csproj" />
-    <ProjectReference Include="..\ThreatModel\ThreatModel.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Minio" Version="6.0.4" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.31" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+    <PackageReference Include="TMReflexionModeler.Taint" Version="0.0.1" />
   </ItemGroup>
 
 </Project>

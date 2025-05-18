@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Minio;
 using StackExchange.Redis;
-using ThreatModel.Attributes;
 
 namespace CustomerPortal.PriceListGenerationService;
 

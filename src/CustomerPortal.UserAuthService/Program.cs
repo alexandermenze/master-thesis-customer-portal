@@ -11,7 +11,6 @@ using CustomerPortal.UserAuthService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Scalar.AspNetCore;
-using ThreatModel.Attributes;
 
 namespace CustomerPortal.UserAuthService;
 

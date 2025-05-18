@@ -6,7 +6,7 @@ using CustomerPortal.UserAuthService.Domain.Repositories;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
-using ThreatModel.Attributes;
+using TMReflexionModeler.Taint;
 
 namespace CustomerPortal.UserAuthService.Authentication;
 

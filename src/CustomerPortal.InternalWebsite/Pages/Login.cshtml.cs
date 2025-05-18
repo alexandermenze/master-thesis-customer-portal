@@ -6,7 +6,6 @@ using CustomerPortal.Messages.Dtos;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using ThreatModel.Attributes;
 
 namespace CustomerPortal.InternalWebsite.Pages;
 

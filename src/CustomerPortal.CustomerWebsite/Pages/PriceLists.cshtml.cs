@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Minio;
 using Minio.DataModel.Args;
 using StackExchange.Redis;
-using ThreatModel.Attributes;
 
 namespace CustomerPortal.CustomerWebsite.Pages;
 

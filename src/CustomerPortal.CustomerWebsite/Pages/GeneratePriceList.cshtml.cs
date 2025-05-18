@@ -4,7 +4,6 @@ using CustomerPortal.CustomerWebsite.Models;
 using CustomerPortal.Messages.Commands;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
-using ThreatModel.Attributes;
 
 namespace CustomerPortal.CustomerWebsite.Pages;
 

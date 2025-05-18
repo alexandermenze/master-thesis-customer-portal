@@ -3,8 +3,6 @@ using CustomerPortal.InternalWebsite.Models;
 using Microsoft.AspNetCore.Mvc;
 using Minio;
 using Minio.DataModel.Args;
-using ThreatModel.Attributes;
-using ThreatModel.Tags;
 
 namespace CustomerPortal.InternalWebsite.Pages;
 

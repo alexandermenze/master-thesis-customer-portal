@@ -4,11 +4,8 @@ using CustomerPortal.Extensions;
 using CustomerPortal.Messages.Dtos;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using ThreatModel.Attributes;
-using ThreatModel.Tags;
 
 namespace CustomerPortal.CustomerWebsite.Pages;
 

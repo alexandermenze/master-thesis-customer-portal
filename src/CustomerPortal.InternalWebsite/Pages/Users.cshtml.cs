@@ -3,7 +3,6 @@ using System.Net.Http.Headers;
 using CustomerPortal.InternalWebsite.Models;
 using CustomerPortal.Messages.Dtos;
 using Microsoft.AspNetCore.Mvc;
-using ThreatModel.Attributes;
 
 namespace CustomerPortal.InternalWebsite.Pages;
 

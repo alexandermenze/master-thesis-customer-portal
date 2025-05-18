@@ -1,7 +1,6 @@
 using CustomerPortal.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using ThreatModel.Attributes;
 
 namespace CustomerPortal.CustomerWebsite.Pages;
 

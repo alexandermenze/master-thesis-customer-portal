@@ -1,1 +1,2 @@
-global using static ThreatModel.Tags.Dataflow;
+global using TMReflexionModeler.Taint;
+global using static TMReflexionModeler.Taint.Dataflow;

@@ -8,12 +8,11 @@
 
     <ItemGroup>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
+        <PackageReference Include="TMReflexionModeler.Taint" Version="0.0.1" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CustomerPortal.ThreatModel\CustomerPortal.ThreatModel.csproj" />
         <ProjectReference Include="..\CustomerPortal.UserAuthService.Domain\CustomerPortal.UserAuthService.Domain.csproj"/>
-        <ProjectReference Include="..\ThreatModel\ThreatModel.csproj"/>
     </ItemGroup>
 
 </Project>
