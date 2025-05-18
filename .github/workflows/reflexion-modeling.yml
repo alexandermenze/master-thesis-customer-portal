@@ -29,6 +29,10 @@ jobs:
           echo "Adding CodeQL binary directory to PATH: $PWD/codeql"
           echo "$PWD/codeql" >> $GITHUB_PATH
 
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
       - name: Add .NET tools to PATH
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
