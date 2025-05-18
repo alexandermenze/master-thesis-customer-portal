@@ -51,7 +51,7 @@ jobs:
           sarif_file: tm-rm-work/reflexion-model.sarif
 
       - name: Upload tm-rm-work artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tm-rm-work-artifacts
           path: tm-rm-work/
