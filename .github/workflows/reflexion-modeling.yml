@@ -1,0 +1,57 @@
+name: TM Reflexion Modeler Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  tm-reflexion-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download and extract CodeQL
+        run: |
+          CODEQL_VERSION="2.21.2"
+          PLATFORM="linux64"
+          ARCHIVE="codeql-bundle.tar.gz"
+          DOWNLOAD_URL="https://github.com/github/codeql-action/releases/download/codeql-bundle-v${CODEQL_VERSION}/codeql-bundle-${PLATFORM}.tar.gz"
+          echo "Downloading CodeQL from $DOWNLOAD_URL"
+          curl -L "$DOWNLOAD_URL" -o "$ARCHIVE"
+          mkdir codeql
+          tar -xzf "$ARCHIVE" -C codeql --strip-components=1
+          echo "Adding CodeQL binary directory to PATH: $PWD/codeql"
+          echo "$PWD/codeql" >> $GITHUB_PATH
+
+      - name: Add .NET tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Install TMReflexionModeler.Tool
+        run: dotnet tool install --global TMReflexionModeler.Tool
+
+      - name: Run TM Reflexion Modeler
+        run: |
+          tm-reflexion-modeler \
+            --tdmf threat-model/final-td-customerportal.json \
+            --tdd overview \
+            --source-dir src \
+            --exclude-dirs "src/CustomerPortal.UserAuthService.Domain.Test" \
+            --sln src/CustomerPortal.sln \
+            --exclude-calls-file threat-model/filter-external-calls.txt
+
+      - name: Upload SARIF results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: tm-rm-work/reflexion-model.sarif
+
+      - name: Upload tm-rm-work artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: tm-rm-work-artifacts
+          path: tm-rm-work/
