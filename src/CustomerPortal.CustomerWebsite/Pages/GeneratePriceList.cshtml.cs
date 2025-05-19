@@ -25,7 +25,7 @@ public class GeneratePriceList(
         PriceDate = DateOnly.FromDateTime(DateTime.Today);
     }
 
-    [ThreatModelProcess("customer-website-core")]
+    [InboundDataflow("customer-website-core", "request-pricelist-generation")]
     public async Task<IActionResult> OnPost()
     {
         if (!ModelState.IsValid)

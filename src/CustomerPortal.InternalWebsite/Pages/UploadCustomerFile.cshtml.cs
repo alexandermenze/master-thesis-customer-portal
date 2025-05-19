@@ -23,7 +23,7 @@ public class UploadCustomerFile(
 
     public void OnGet() { }
 
-    [ThreatModelProcess("sales-dept-website")]
+    [InboundDataflow("sales-dept-website", "upload-file-for-customer")]
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)

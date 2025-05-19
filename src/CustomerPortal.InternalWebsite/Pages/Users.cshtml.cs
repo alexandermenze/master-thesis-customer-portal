@@ -13,7 +13,7 @@ public class Users(ILogger<Users> logger, IHttpClientFactory httpClientFactory)
 
     public ImmutableArray<UserResponseDto> AllUsers { get; set; } = [];
 
-    [ThreatModelProcess("sales-dept-website")]
+    [InboundDataflow("sales-dept-website", "manage-user-accounts")]
     public async Task<IActionResult> OnGet()
     {
         var bearerToken = User.FindFirst("BearerToken")?.Value;
@@ -32,7 +32,7 @@ public class Users(ILogger<Users> logger, IHttpClientFactory httpClientFactory)
         return Page();
     }
 
-    [ThreatModelProcess("sales-dept-website")]
+    [InboundDataflow("sales-dept-website", "manage-user-accounts")]
     public async Task<IActionResult> OnPostDeactivateAsync(Guid id)
     {
         var bearerToken = User.FindFirst("BearerToken")?.Value;
@@ -54,7 +54,7 @@ public class Users(ILogger<Users> logger, IHttpClientFactory httpClientFactory)
         return await OnGet();
     }
 
-    [ThreatModelProcess("sales-dept-website")]
+    [InboundDataflow("sales-dept-website", "manage-user-accounts")]
     public async Task<IActionResult> OnPostApproveAsync(Guid id)
     {
         await OnGet();

@@ -25,7 +25,7 @@ public class Login(ILogger<Login> logger, IHttpClientFactory httpClientFactory)
         public string? Password { get; set; }
     }
 
-    [ThreatModelProcess("sales-dept-website")]
+    [InboundDataflow("sales-dept-website", "login")]
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)

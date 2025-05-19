@@ -16,7 +16,7 @@ public class GenericFiles(
 {
     public ImmutableArray<string> Files = [];
 
-    [ThreatModelProcess("customer-website-core")]
+    [OutboundDataflow("customer-website-core", "list-files")]
     public async Task<IActionResult> OnGet()
     {
         var currentUser = await GetCurrentUser();
@@ -48,7 +48,7 @@ public class GenericFiles(
         return Page();
     }
 
-    [ThreatModelProcess("customer-website-core")]
+    [OutboundDataflow("customer-website-core", "list-files")]
     public async Task<IActionResult> OnPostDownloadAsync(string fileName)
     {
         // TODO: Sanitize input

@@ -19,7 +19,7 @@ public class RegisterModel(IHttpClientFactory httpClientFactory) : PageModel
     [BindProperty]
     public InputModel Input { get; set; } = new();
 
-    [ThreatModelProcess("customer-website-auth")]
+    [InboundDataflow("customer-website-auth", "register-as-customer")]
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)

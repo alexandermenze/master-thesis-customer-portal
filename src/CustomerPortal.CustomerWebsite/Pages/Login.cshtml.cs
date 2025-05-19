@@ -24,7 +24,7 @@ public class Login(IHttpClientFactory httpClientFactory) : PageModel
         public string? Password { get; set; }
     }
 
-    [ThreatModelProcess("customer-website-auth")]
+    [InboundDataflow("customer-website-auth", "login-customer")]
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
