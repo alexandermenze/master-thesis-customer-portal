@@ -21,6 +21,7 @@ System.ComponentModel.%,%,%
 System.Security.Cryptography,RandomNumberGenerator,GetBytes
 System.Reflection,Assembly,GetExecutingAssembly
 System.Net.Http,HttpContent,%
+System.Net.Http.Json,HttpContentJsonExtensions,%
 Microsoft.AspNetCore.Authentication,AuthenticationBuilder,%
 Microsoft.AspNetCore.Authentication,AuthenticationHttpContextExtensions,SignInAsync
 Microsoft.AspNetCore.Authentication,AuthenticateResult,%
@@ -35,6 +36,7 @@ Microsoft.AspNetCore.Mvc,ControllerBase,%
 Microsoft.AspNetCore.Http,Results,LocalRedirect
 Microsoft.Extensions.DependencyInjection.%,%,%
 Microsoft.Extensions.DependencyInjection,%,%
+Microsoft.Extensions.Logging,ConsoleLoggerExtensions,AddConsole
 Microsoft.Extensions.AspNetCore.Builder.%,%,%
 Microsoft.Extensions.AspNetCore.Builder,%,%
 Microsoft.EntityFrameworkCore.Metadata.%,%,%
@@ -42,6 +44,14 @@ Microsoft.EntityFrameworkCore,RelationalPropertyBuilderExtensions,%
 Microsoft.EntityFrameworkCore,ModelBuilder,ApplyConfigurationsFromAssembly
 Microsoft.EntityFrameworkCore.Migrations.%,%,%
 Microsoft.EntityFrameworkCore.Migrations,%,%
+Microsoft.EntityFrameworkCore,NpgsqlDbContextOptionsBuilderExtensions,UseNpgsql
 QuestPDF.Fluent,%,%
 QuestPDF.Helpers,%,%
 Scalar.AspNetCore,ScalarEndpointRouteBuilderExtensions,%
+StackExchange.Redis,ConnectionMultiplexer,ConnectAsync
+StackExchange.Redis,ConnectionMultiplexer,Connect
+StackExchange.Redis,ConnectionMultiplexer,GetDatabase
+StackExchange.Redis,IConnectionMultiplexer,GetDatabase
+Minio.DataModel.Args,%Args%,%
+Minio,MinioClientExtensions,%
+Minio,ServiceCollectionExtensions,AddMinio
