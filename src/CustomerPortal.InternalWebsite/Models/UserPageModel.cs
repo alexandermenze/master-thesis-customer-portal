@@ -33,11 +33,14 @@ public class UserPageModel(ILogger logger, IHttpClientFactory httpClientFactory)
                 bearerToken
             );
 
-            return await _httpClient.GetFromJsonAsync<UserResponseDto>("users/me");
+            return await Pull(
+                "get-logged-in-user",
+                () => _httpClient.GetFromJsonAsync<UserResponseDto>("users/me")
+            );
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to get user");
+            Push("log-auth-errors", () => logger.LogWarning(ex, "Failed to get user"));
             return null;
         }
     }

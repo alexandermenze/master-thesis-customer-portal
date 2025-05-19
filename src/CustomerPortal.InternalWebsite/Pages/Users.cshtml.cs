@@ -26,7 +26,10 @@ public class Users(ILogger<Users> logger, IHttpClientFactory httpClientFactory)
             bearerToken
         );
 
-        var all = await _httpClient.GetFromJsonAsync<ImmutableArray<UserResponseDto>>("/users");
+        var all = await Pull(
+            "list-users",
+            () => _httpClient.GetFromJsonAsync<ImmutableArray<UserResponseDto>>("/users")
+        );
 
         AllUsers = all;
         return Page();
@@ -45,7 +48,10 @@ public class Users(ILogger<Users> logger, IHttpClientFactory httpClientFactory)
             bearerToken
         );
 
-        var response = await _httpClient.PatchAsJsonAsync($"/users/{id}/deactivate", new { });
+        var response = await Push(
+            "approve-user",
+            () => _httpClient.PatchAsJsonAsync($"/users/{id}/deactivate", new { })
+        );
 
         if (response.IsSuccessStatusCode)
             return RedirectToPage();
@@ -64,9 +70,9 @@ public class Users(ILogger<Users> logger, IHttpClientFactory httpClientFactory)
         if (user?.CustomerNo is null)
             return RedirectToPage();
 
-        var response = await _httpClient.PostAsJsonAsync(
-            $"/users/{id}/approve",
-            new { user.CustomerNo }
+        var response = await Push(
+            "approve-user",
+            () => _httpClient.PostAsJsonAsync($"/users/{id}/approve", new { user.CustomerNo })
         );
 
         if (response.IsSuccessStatusCode)

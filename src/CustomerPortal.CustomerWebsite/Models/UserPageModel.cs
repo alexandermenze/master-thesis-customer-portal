@@ -36,7 +36,7 @@ public class UserPageModel(ILogger logger, IHttpClientFactory httpClientFactory)
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to get user");
+            Push("log-auth-errors", () => logger.LogWarning(ex, "Failed to get user"));
             return null;
         }
     }
