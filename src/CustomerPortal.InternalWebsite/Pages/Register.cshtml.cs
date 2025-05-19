@@ -20,7 +20,7 @@ public class RegisterModel(IHttpClientFactory httpClientFactory) : PageModel
     [BindProperty]
     public InputModel Input { get; set; } = new();
 
-    [ThreatModelProcess("sales-dept-website")]
+    [InboundDataflow("sales-dept-website", "register-as-internal-user")]
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
