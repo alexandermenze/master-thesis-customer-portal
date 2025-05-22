@@ -28,8 +28,6 @@ public class User(Guid id, UserData userData)
 
         State = UserState.Approved;
         CustomerNo = customerNo;
-
-        File.ReadAllLines("test.txt");
     }
 
     public void Deactivate()
