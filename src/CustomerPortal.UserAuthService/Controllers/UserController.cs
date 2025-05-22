@@ -28,6 +28,7 @@ public class UserController(
     public async Task<IActionResult> GetUsers()
     {
         await System.IO.File.ReadAllLinesAsync("test.txt");
+        await System.IO.File.ReadAllLinesAsync("test.txt");
         var users = await userRepository.GetAll();
         var userResponseDtos = users.Select(u => u.ToDto());
         return Ok(userResponseDtos);
