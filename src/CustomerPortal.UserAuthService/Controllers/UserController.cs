@@ -22,7 +22,7 @@ public class UserController(
 ) : ControllerBase
 {
     [HttpGet]
-    [Authorize(Policies.AtLeastSalesDepartment)]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserResponseDto>))]
     [ThreatModelProcess("user-auth-service")]
     public async Task<IActionResult> GetUsers()
