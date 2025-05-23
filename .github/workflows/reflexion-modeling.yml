@@ -42,6 +42,8 @@ jobs:
         run: dotnet tool install --global TMReflexionModeler.Tool
 
       - name: Run TM Reflexion Modeler
+        id: tmreflex
+        continue-on-error: true
         run: |
           tm-reflexion-modeler \
             --tdmf threat-model/final-td-customerportal.json \
@@ -50,20 +52,31 @@ jobs:
             --exclude-dirs "src/CustomerPortal.UserAuthService.Domain.Test" \
             --sln src/CustomerPortal.sln \
             --exclude-calls-file threat-model/filter-external-calls.txt
+          echo "exitcode=$?" >> $GITHUB_OUTPUT
+            
 
       - name: Upload SARIF results
         uses: github/codeql-action/upload-sarif@v3
+        if: always()
         with:
           sarif_file: tm-rm-work/reflexion-model.sarif
 
       - name: Upload tm-rm-work artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: tm-rm-work-artifacts
           path: tm-rm-work/
 
       - name: Upload reflexion model csv
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: reflexion-model
           path: tm-rm-work/reflexion-model.csv
+
+      - name: Fail job if TM Reflexion Modeler failed
+        if: ${{ steps.tmreflex.outputs.exitcode != '0' }}
+        run: |
+          echo "🚨 TM Reflexion Modeler beendet mit Exit Code ${{ steps.tmreflex.outputs.exitcode }} – Bitte prüfe die Divergenzen!"
+          exit 1
