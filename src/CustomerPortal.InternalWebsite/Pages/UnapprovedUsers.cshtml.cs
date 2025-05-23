@@ -31,7 +31,7 @@ public class UnapprovedUsers(ILogger<UnapprovedUsers> logger, IHttpClientFactory
             bearerToken
         );
 
-        var response = await _httpClient.GetAsync("/users/unapproved");
+        var response = await Pull("list-users", () => _httpClient.GetAsync("/users/unapproved"));
 
         if (response.IsSuccessStatusCode)
         {
