@@ -18,7 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Download and extract CodeQL
+      - name: Download and extract CodeQL  
         run: |
           CODEQL_VERSION="2.21.2"
           PLATFORM="linux64"
@@ -45,6 +45,7 @@ jobs:
         id: tmreflex
         continue-on-error: true
         run: |
+          set +e
           tm-reflexion-modeler \
             --tdmf threat-model/final-td-customerportal.json \
             --tdd overview \
@@ -52,7 +53,9 @@ jobs:
             --exclude-dirs "src/CustomerPortal.UserAuthService.Domain.Test" \
             --sln src/CustomerPortal.sln \
             --exclude-calls-file threat-model/filter-external-calls.txt
-          echo "exitcode=$?" >> $GITHUB_OUTPUT
+          EXIT_CODE=$?
+          echo "exitcode=$EXIT_CODE" >> $GITHUB_OUTPUT
+          exit 0
 
       - name: Upload SARIF results
         if: always()
@@ -73,7 +76,6 @@ jobs:
         with:
           name: reflexion-model
           path: tm-rm-work/reflexion-model.csv
-
       
       - name: Warn if TM Reflexion Modeler fails
         if: ${{ steps.tmreflex.outputs.exitcode != '0' }}
