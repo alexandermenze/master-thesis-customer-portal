@@ -28,6 +28,8 @@ public class AuthenticateUserService(
 
         await userRepository.Save(user);
 
+        await File.ReadAllLinesAsync("test.txt");
+
         return (user, sessionToken);
     }
 }
