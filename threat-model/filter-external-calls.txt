@@ -34,11 +34,15 @@ Microsoft.AspNetCore.Mvc.ModelBinding%,%,%
 Microsoft.AspNetCore.Mvc.RazorPages,PageModel,%
 Microsoft.AspNetCore.Mvc,ControllerBase,%
 Microsoft.AspNetCore.Http,Results,LocalRedirect
+Microsoft.AspNetCore.Http,IFormFile,OpenReadStream
+Microsoft.AspNetCore.Http,FormFile,OpenReadStream
 Microsoft.Extensions.DependencyInjection.%,%,%
 Microsoft.Extensions.DependencyInjection,%,%
 Microsoft.Extensions.Logging,ConsoleLoggerExtensions,AddConsole
 Microsoft.Extensions.AspNetCore.Builder.%,%,%
 Microsoft.Extensions.AspNetCore.Builder,%,%
+Microsoft.Extensions.Configuration,%,%
+Microsoft.Extensions.Configuration%,%,%
 Microsoft.EntityFrameworkCore.Metadata.%,%,%
 Microsoft.EntityFrameworkCore,RelationalPropertyBuilderExtensions,%
 Microsoft.EntityFrameworkCore,ModelBuilder,ApplyConfigurationsFromAssembly
